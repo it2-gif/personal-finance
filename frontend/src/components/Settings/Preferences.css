@@ -1,0 +1,10 @@
+.preferences-card { display: grid; gap: 0; margin-top: 20px; padding: 24px; }
+.preferences-heading, .preference-row, .session-row { display: flex; align-items: center; justify-content: space-between; gap: 22px; }
+.preferences-heading { padding-bottom: 18px; }
+.preferences-heading h2, .preferences-heading p { margin: 0; }
+.preferences-heading h2 { font-size: 17px; }
+.preferences-heading p, .preference-row small, .session-row small { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; }
+.preference-row, .session-row { padding: 17px 0; border-top: 1px solid var(--border); }
+.preference-options { display: flex; gap: 7px; }
+.preference-row select { width: min(220px, 100%); }
+@media (max-width: 620px) { .preference-row, .session-row { align-items: stretch; flex-direction: column; } .preference-options, .preference-row select { width: 100%; } .preference-options .ui-button { flex: 1; } }

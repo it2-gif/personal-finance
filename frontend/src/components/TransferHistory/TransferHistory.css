@@ -1,0 +1,74 @@
+.transfer-history-panel {
+  margin-top: 24px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.transfer-history-panel h2 {
+  margin-top: 0;
+}
+
+.transfer-history-panel > p {
+  color: var(--muted);
+}
+
+.transfer-history-list {
+  display: grid;
+  gap: 12px;
+  margin: 20px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transfer-history-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.transfer-history-details {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.transfer-history-details h3 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.transfer-history-details p {
+  margin: 4px 0;
+  color: var(--muted);
+}
+
+.transfer-history-amount {
+  flex-shrink: 0;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.transfer-history-pagination {
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  .transfer-history-panel {
+    padding: 20px;
+  }
+
+  .transfer-history-item {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .transfer-history-pagination button {
+    width: 100%;
+  }
+}

@@ -1,0 +1,7 @@
+.metric-card { min-width: 0; padding: 21px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-sm); }
+.metric-card-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; }
+.metric-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: var(--primary-soft); color: var(--primary); font-size: 16px; }
+.metric-card strong { display: block; margin-top: 20px; color: var(--text); font-size: clamp(24px, 2.5vw, 32px); letter-spacing: -.04em; overflow-wrap: anywhere; }
+.metric-card small { display: block; margin-top: 7px; color: var(--muted); }
+.metric-card-out .metric-icon { background: var(--danger-soft); color: var(--danger); }
+.metric-card-balance .metric-icon { background: var(--primary-soft); color: var(--primary); }

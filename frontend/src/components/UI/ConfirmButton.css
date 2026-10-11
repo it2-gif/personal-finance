@@ -1,0 +1,8 @@
+.modal-backdrop { position: fixed; inset: 0; z-index: 110; display: grid; place-items: center; padding: 20px; background: rgb(7 12 27 / 68%); backdrop-filter: blur(7px); }
+.confirm-modal { width: min(440px, 100%); padding: 28px; border: 1px solid var(--border); border-radius: 22px; background: var(--surface); color: var(--text); box-shadow: var(--shadow-lg); animation: modal-in 160ms ease-out; }
+.confirm-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: var(--danger-soft); color: var(--danger); font-weight: 900; }
+.confirm-modal h2 { margin: 18px 0 8px; font-size: 22px; }
+.confirm-modal p { margin: 0; color: var(--muted); }
+.confirm-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+@keyframes modal-in { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+@media (prefers-reduced-motion: reduce) { .confirm-modal { animation: none; } }

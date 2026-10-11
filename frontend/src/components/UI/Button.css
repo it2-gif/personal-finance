@@ -1,0 +1,55 @@
+.ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 0 18px;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: transform var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.ui-button:hover:not(:disabled) { transform: translateY(-1px); }
+.ui-button:active:not(:disabled) { transform: translateY(0); }
+.ui-button:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.ui-button:disabled { cursor: not-allowed; opacity: .55; transform: none; box-shadow: none; }
+.ui-button-small { min-height: 36px; padding-inline: 13px; font-size: .875rem; }
+.ui-button-large { min-height: 48px; padding-inline: 22px; }
+
+.ui-button-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 8px 18px var(--primary-shadow);
+}
+.ui-button-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: 0 10px 24px var(--primary-shadow); }
+.ui-button-secondary { border-color: var(--border-strong); background: var(--surface); color: var(--text); }
+.ui-button-secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); background: var(--primary-soft); }
+.ui-button-danger { background: var(--danger); color: #fff; box-shadow: 0 8px 18px var(--danger-shadow); }
+.ui-button-danger:hover:not(:disabled) { background: var(--danger-hover); }
+.ui-button-ghost { background: transparent; color: var(--muted); }
+.ui-button-ghost:hover:not(:disabled) { background: var(--surface-muted); color: var(--text); }
+.ui-button-icon { width: 42px; padding: 0; border-color: var(--border); background: var(--surface); color: var(--text); }
+.ui-button-icon:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+
+.ui-button-spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-spin .65s linear infinite;
+}
+
+@keyframes ui-spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-button { transition: none; }
+  .ui-button-spinner { animation-duration: 1.4s; }
+}

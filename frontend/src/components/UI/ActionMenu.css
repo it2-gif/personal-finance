@@ -1,0 +1,7 @@
+.ui-action-menu { position: relative; }
+.ui-action-menu summary { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; color: var(--muted); cursor: pointer; list-style: none; user-select: none; }
+.ui-action-menu summary::-webkit-details-marker { display: none; }
+.ui-action-menu summary:hover, .ui-action-menu[open] summary { background: var(--surface-hover); color: var(--text); }
+.ui-action-menu summary:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+.ui-action-menu-popover { position: absolute; right: 0; bottom: calc(100% + 7px); z-index: 10; min-width: 145px; padding: 6px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface-raised); box-shadow: var(--shadow-md); }
+.ui-action-menu-popover .ui-button { width: 100%; justify-content: flex-start; }

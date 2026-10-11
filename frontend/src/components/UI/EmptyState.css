@@ -1,0 +1,4 @@
+.ui-empty-state { display: grid; justify-items: center; gap: 8px; padding: 40px 24px; text-align: center; color: var(--muted); }
+.ui-empty-state h3, .ui-empty-state p { margin: 0; }
+.ui-empty-state h3 { color: var(--text); }
+.ui-empty-icon { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 14px; background: var(--primary-soft); color: var(--primary); font-weight: 900; }

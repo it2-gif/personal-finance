@@ -1,0 +1,82 @@
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px 20px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 36px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.auth-card .brand {
+  margin: 0 0 28px;
+  color: var(--primary);
+  font-weight: 700;
+}
+
+.auth-card h1 {
+  margin: 0 0 8px;
+  font-size: 30px;
+  letter-spacing: -0.8px;
+}
+
+.auth-card h1 + p {
+  margin: 0 0 28px;
+  color: var(--muted);
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.auth-card label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-card input {
+  width: 100%;
+  min-height: 50px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 16px;
+}
+
+.auth-card input + label {
+  margin-top: 12px;
+}
+
+.auth-card button {
+  margin-top: 16px;
+}
+
+.auth-card [role="alert"] {
+  margin: 4px 0 0;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 28px 24px;
+  }
+}
+
+.login-theme-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 20;
+}

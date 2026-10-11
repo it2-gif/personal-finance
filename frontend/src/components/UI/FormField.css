@@ -1,0 +1,4 @@
+.ui-field { display: grid; gap: 7px; }
+.ui-field label { color: var(--text); font-size: .875rem; font-weight: 700; }
+.ui-field small { color: var(--muted); line-height: 1.45; }
+.ui-field .ui-field-error { color: var(--danger); }

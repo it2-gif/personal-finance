@@ -1,0 +1,399 @@
+PERSONAL FINANCE — PROGRESS AND COMPLETE REMAINING ROADMAP
+Updated: 6 October 2026, Africa/Cairo
+
+This record is based on our conversation and your reported test results.
+It is not an independent audit of every file on your computer.
+DONE = implemented and reported working.
+PARTIAL = implemented but additional behavior or tests remain.
+TODO = not implemented or not verified yet.
+
+1. PROJECT GOAL AND AGREED APPROACH
+---------------------------------
+Build a personal money tracker used on desktop and iPhone through a web app,
+then make it installable on the iPhone Home Screen as a PWA.
+Track income, spending, cash, bank balances, credit cards, transfers, and bills.
+Later add computer vision: photograph a receipt, extract details, review, save.
+Use simple English and a professional, responsive interface.
+Use small implementation steps: change, check, test, then continue.
+Use JavaScript rather than TypeScript. Keep components in separate JSX/CSS folders.
+Use free/open-source software and avoid paid AI APIs. Railway hosting is funded
+through your existing Hobby subscription; hosting is not inherently zero-cost.
+
+2. TECHNICAL SETUP — DONE
+-----------------------
+Project location: E:\My projects\personal-finance
+Backend: Python, FastAPI, SQLAlchemy, PostgreSQL, Alembic.
+Frontend: JavaScript, React, Vite, plain CSS.
+Python virtual environment: backend\.venv
+Python selected for project: 3.12.10.
+Node reported during setup: v22.17.0; npm: 10.9.2.
+Use npm.cmd in PowerShell to avoid the npm.ps1 execution-policy issue.
+Core backend packages also include psycopg, python-dotenv, pwdlib with Argon2,
+and email validation support. No need to add large UI libraries by default.
+PostgreSQL is hosted on Railway and local connection was tested successfully.
+Local use requires the public Railway database address, not railway.internal.
+Database URL is held in backend .env. Do not include credentials in this record.
+SQLAlchemy connection pooling and connection health checks are configured.
+Dependency check reported: No broken requirements found.
+Frontend lint and production build have repeatedly passed, including latest changes.
+
+3. AUTHENTICATION — CORE DONE; PRODUCTION HARDENING TODO
+------------------------------------------------------
+Single-owner registration: first user can register; later registration is closed.
+Database lock protects the first-registration decision against simultaneous requests.
+Passwords are hashed using pwdlib/Argon2.
+Login returns the user and sets an HttpOnly session cookie.
+Only a hash of the session token is stored in login_sessions.
+Sessions expire after seven days under current configuration.
+Login replaces the current browser's previous session.
+GET /api/auth/me checks the session and identifies the user.
+Logout removes the session and clears the cookie.
+Unauthorized requests were tested and returned 401.
+Login and logout were tested successfully.
+Current secure-cookie behavior depends on production configuration.
+Remaining: login throttling, CSRF/origin protection, recovery, production review,
+expired-session UX, session cleanup and change-password/session-revocation flow.
+
+4. ACCOUNT TRACKING — DONE/PARTIAL
+--------------------------------
+Accounts belong to the authenticated user.
+Create accounts, list accounts, edit names and starting balances.
+Account types: cash, bank, credit.
+Cash and bank use ordinary money-in/money-out balance logic.
+Debit card spending belongs to its linked bank account; avoid double-counting it
+as both a debit-card balance and a bank balance.
+Credit cards have separate credit limits and starting debt.
+Credit starting debt is stored as a negative opening balance.
+Example: owing 2,000 EGP at setup means opening_balance = -2000.00.
+The credit limit is not income or money owned.
+Credit debt and available credit are calculated and displayed separately.
+Credit card edit form supports name, starting debt and credit limit.
+Changing an account to or from credit is blocked by the current update endpoint.
+Cash/bank type preservation during edits was tested.
+Account field validation and database check constraints were added.
+Starting balances do not count as income in date summaries.
+
+Current formula:
+balance = opening balance + income - expenses + transfers received - transfers sent
+For credit cards:
+amount owed = max(-balance, 0)
+available credit = credit limit + balance
+
+Still missing: statements, due dates, minimum payments, card refunds/fees/interest,
+credit overpayments display, account archiving, and full credit-limit policies.
+Current available-credit figure is bookkeeping; actual bank availability may differ.
+
+5. MONEY ENTRIES — DONE/PARTIAL
+------------------------------
+Create income and expense entries with account, amount, date, category and note.
+Edit entries, cancel editing, and delete with confirmation.
+Positive amount validation, maximum precision and two decimal places.
+Money uses Python Decimal and PostgreSQL Numeric rather than float arithmetic.
+Ownership checks restrict access to the user's accounts and entries.
+Invalid account checks and deletion/not-found behavior were tested.
+History shows dates, amounts, account names and notes.
+Filters: account, type, date range and category/note search.
+Search is case-insensitive; literal wildcard characters are escaped.
+Reversed dates are rejected.
+History loads ten entries at a time with Load more.
+First-page behavior was tested; loading a real second page is still unverified
+because only a few entries were available during that test.
+
+Duplicate-save protection:
+Each new save uses a UUID request_id with a database unique constraint.
+Same ID and same details returns the existing entry.
+Same ID with different details returns 409.
+Repeated-click guard and failed-save retry were implemented.
+Pending money entry is saved per user in localStorage before sending.
+Pending entry restoration after refresh and successful retry were tested.
+
+Important remaining edge case:
+The idempotency record is currently the mutable transaction row itself.
+Editing it can cause later retries to conflict; deleting it can permit the same
+request ID to create another row. Review durable save receipts/tombstones before
+claiming protection across edits/deletion or adding transfer deletion.
+
+6. SUMMARIES — DONE
+-------------------
+Today, This week, This month controls.
+Cairo dates; week currently starts on Saturday.
+Date summary returns income, expenses and surplus.
+surplus = income - expenses for the selected dates.
+Surplus is different from total account balance.
+Current summaries are EGP-only.
+Empty dates returned zeros. Date and amount calculation tests passed.
+Adding/editing/deleting entries refreshes affected views without a page refresh.
+Transfers and credit card payments do not increase summary income or expenses.
+Remaining UI refinement: replace ambiguous Money left wording with a clear label
+such as Net for this period, plus a short explanation in simple English.
+
+7. TRANSFERS AND CARD PAYMENTS — DONE/PARTIAL
+-------------------------------------------
+Separate transfers table, not two income/expense transactions.
+Cash/Bank can transfer to another Cash/Bank account or pay a credit card.
+Source credit card is currently rejected; cash advances require later support.
+Source and destination must differ and belong to the current user.
+Currencies must match. Amount must be positive with up to two decimal places.
+UUID request ID prevents duplicate transfer saves.
+POST /api/transfers and GET /api/transfers implemented.
+Transfer history includes account names, date, amount, note and batches of ten.
+Transfer form updates balances and history without manual page refresh.
+Same-account rejection and different-details/save-ID conflict were tested.
+Transfers and card payments were verified not to change income or expenses.
+
+Latest transfer-recovery work:
+TransferForm now receives userId and is keyed by user.id in App.
+It stores pending transfers under a per-user localStorage key before sending.
+It restores the original save ID and details after refresh.
+It locks fields during an uncertain save and uses Retry transfer.
+Storage failures are surfaced rather than silently sending an unprotected request.
+Lint/build passed. User stopped FastAPI, saw failure, restarted, refreshed,
+confirmed the pending details remained, and clicked Retry transfer.
+FINAL CHECKS STILL AWAITING CONFIRMATION:
+  - Transfer saved message appeared.
+  - Transfer restore check appears exactly once in history.
+  - Another refresh no longer shows Retry transfer.
+
+Transfer edit/delete/reversal and filtering are not implemented yet.
+Insufficient-funds checks and concurrency rules need an explicit product decision.
+Do not promise that the current endpoint prevents overdrafts or overpayments.
+Multiple-browser-tab pending-save coordination is also not implemented.
+
+8. DATABASE MIGRATION HISTORY
+-----------------------------
+43dc1aebf869 — create users table
+675b62608cc0 — create login sessions table
+7a1aec90a2b0 — create accounts table
+cc27e716b563 — create transactions table
+48d20c0f5ffa — add transaction request ID
+69835002dacd — add account types and credit limits
+81ac060feaea — create transfers table (latest confirmed applied head)
+
+The transaction unique constraint was fixed inside __table_args__:
+uq_transactions_request_id.
+The account migration was manually completed with named check constraints.
+Transfer migration has positive-amount, different-account and unique-ID constraints.
+Always review generated migrations before applying them.
+
+9. CURRENT FILE STRUCTURE
+-------------------------
+backend/
+  main.py — API routes
+  auth.py — passwords, tokens, cookies and current-user dependency
+  database.py — engine, Base and database-session dependency
+  models.py — User, LoginSession, Account, Transaction, Transfer
+  schemas.py — request/response validation
+  alembic.ini
+  migrations/env.py and migrations/versions/
+  requirements.txt
+  .env — private credentials/settings
+  .venv/
+  check_db.py, check_schemas.py, check_transactions.py,
+  check_accounts.py and check_transfers.py — setup/validation checks
+
+frontend/src/
+  api.js — shared API request helper
+  App.jsx — session handling, component assembly and refresh key
+  App.css — app-level styles
+  index.css — global styles
+  main.jsx — React entry point
+  components/Login/Login.jsx and Login.css
+  components/Dashboard/Dashboard.jsx and Dashboard.css
+  components/TransactionForm/TransactionForm.jsx and TransactionForm.css
+  components/TransactionForm/pendingStorage.js
+  components/TransactionHistory/TransactionHistory.jsx and TransactionHistory.css
+  components/AccountBalances/AccountBalances.jsx and AccountBalances.css
+  components/AccountForm/AccountForm.jsx and AccountForm.css
+  components/TransferForm/TransferForm.jsx and TransferForm.css
+  components/TransferHistory/TransferHistory.jsx and TransferHistory.css
+
+The folder list describes the agreed structure; verify actual files before refactoring.
+
+10. CURRENT API ROUTES
+----------------------
+GET    /api/health
+GET    /api/auth/registration-status
+POST   /api/auth/signup
+POST   /api/auth/login
+POST   /api/auth/logout
+GET    /api/auth/me
+GET    /api/accounts
+POST   /api/accounts
+PUT    /api/accounts/{account_id}
+GET    /api/accounts/balances
+GET    /api/transactions
+POST   /api/transactions
+PUT    /api/transactions/{transaction_id}
+DELETE /api/transactions/{transaction_id}
+GET    /api/summary
+POST   /api/transfers
+GET    /api/transfers
+
+11. DEVELOPMENT COMMANDS
+------------------------
+Backend — separate VS Code PowerShell terminal:
+cd "E:\My projects\personal-finance\backend"
+.\.venv\Scripts\python.exe -m uvicorn main:app --reload
+
+Frontend — separate terminal:
+cd "E:\My projects\personal-finance\frontend"
+npm.cmd run dev
+
+Frontend checks:
+npm.cmd run lint
+npm.cmd run build
+
+Migration status:
+.\.venv\Scripts\python.exe -m alembic current
+
+Local frontend: http://localhost:5173/
+Local API docs: http://127.0.0.1:8000/docs
+Vite proxies /api to local FastAPI port 8000.
+ECONNREFUSED means FastAPI is stopped or unavailable at that address.
+After testing a backend outage, restart FastAPI before refreshing the login page.
+React StrictMode can cause duplicate development GET requests; it is not evidence
+that two user-visible components should appear.
+
+12. REMAINING IMPLEMENTATION — RECOMMENDED ORDER
+-----------------------------------------------
+PHASE A — Finish money behavior and data integrity
+[ ] Confirm the three final transfer-recovery checks above.
+[ ] Make idempotency durable across edits/deletion and define request-ID retention.
+[ ] Decide how uncertain or conflicting saves can be reviewed and resolved safely.
+[ ] Add duplicate protection to account creation.
+[ ] Add safe transfer reversal/correction and cleanup of test transfers.
+[ ] Add account archive/remove rules; never remove accounts with hidden ledger effects.
+[ ] Add account-type selection to AccountForm and credit-card creation fields.
+[ ] Add accurate credit-entry rules: purchases, refunds, fees and adjustments.
+[ ] Prevent ordinary card repayments being recorded as income; use transfers.
+[ ] Decide overdraft, insufficient funds, overpayment and credit-limit behavior.
+[ ] Enforce chosen balance rules under simultaneous requests, not only in the UI.
+[ ] Handle a positive card balance as credit held on the card, not zero debt alone.
+[ ] Test pagination with more than ten records, including filter changes and failures.
+[ ] Test ownership checks and concurrent duplicate requests with meaningful API tests.
+
+PHASE B — Credit card billing
+[ ] Model each card's statement periods and actual payment due dates.
+[ ] Separate total debt from the statement amount due.
+[ ] Record statement opening/closing dates, billed amount and minimum payment.
+[ ] Allocate payments and credits to statements with explicit rules.
+[ ] Show paid, partially paid, due soon and overdue states.
+[ ] Allow manual statement data/corrections; do not assume a fixed day always works.
+[ ] Add optional reminders only after due-date behavior and delivery are defined.
+[ ] Clarify that bank statements remain authoritative for interest and exact amounts.
+
+PHASE C — Professional UI/UX and responsive layout
+[ ] Replace the long page with Overview, Transactions, Accounts and Settings.
+[ ] Plan placement of transfers/card payments within those sections.
+[ ] Use desktop navigation and a compact mobile navigation pattern.
+[ ] Keep Add entry easy to reach; preserve pending saves while switching screens.
+[ ] Make income, spending, transfers and card payments distinct user actions.
+[ ] Add first-use guidance and account setup.
+[ ] Consistent colors, spacing, typography, cards, forms and button hierarchy.
+[ ] Labels explain money owned versus credit available versus debt owed.
+[ ] Clear success, loading, empty, validation, retry and signed-out states.
+[ ] Avoid hiding useful history when a single operation fails.
+[ ] Keyboard navigation, visible focus, labels and useful screen-reader messages.
+[ ] Mobile touch targets, 16px form text, no sideways scrolling, safe-area spacing.
+[ ] Test at narrow phone, tablet and desktop widths, then on the real iPhone.
+[ ] Handle long account names, big amounts, negative values and long notes.
+[ ] Reduce repeated /accounts fetching through shared account data where appropriate.
+[ ] Retain selected periods and filters during data refresh when practical.
+
+PHASE D — Security and recovery before public use
+[ ] Review current auth.py and deployment settings.
+[ ] Add login/signup throttling with storage suitable for deployment workers.
+[ ] Add CSRF/origin checks for cookie-authenticated write operations.
+[ ] Set Secure cookies under HTTPS and validate SameSite and same-origin behavior.
+[ ] Add change-password, real-email update and safe owner recovery.
+[ ] Define recovery without requiring a paid email service; verify chosen delivery option.
+[ ] Revoke appropriate sessions after password changes/recovery.
+[ ] Handle expired sessions without losing pending entries.
+[ ] Clean expired sessions and avoid logging passwords, tokens or database URLs.
+[ ] Restrict production hosts/origins and review error disclosure.
+[ ] Ensure .env, .venv and generated credentials are excluded from git.
+[ ] Review access ownership on every new endpoint and response.
+
+PHASE E — Railway publication
+[ ] Verify repository state and production dependency/runtime versions.
+[ ] Decide a simple same-origin layout for frontend and /api (cookies and routing).
+[ ] Configure the production build and frontend asset serving.
+[ ] Deploy the FastAPI backend; database deployment alone does not publish the app.
+[ ] Configure DATABASE_URL through Railway references/private networking where suitable.
+[ ] Configure production environment variables and dynamic PORT binding.
+[ ] Apply migrations once through a controlled release step.
+[ ] Add readiness/health checks and useful application logs.
+[ ] Enable the public HTTPS domain; verify static routes and API routes.
+[ ] Test login, cookies, logout and first-owner registration closure live.
+[ ] Check resource use, Railway costs, restart behavior and database connection limits.
+[ ] Document rollout and rollback procedures.
+
+PHASE F — Backups, exports and cleanup
+[ ] Set an available database backup schedule and retention policy.
+[ ] Test restoring into a separate database before relying on backups.
+[ ] Add CSV export of all matching entries, not only the visible page.
+[ ] Export transfers and useful account metadata too.
+[ ] Handle spreadsheet formula injection, UTF-8 and decimal/date formatting.
+[ ] Remove confirmed test entries/accounts/transfers without touching real records.
+[ ] Document that CSV export does not replace a full database backup.
+
+PHASE G — iPhone PWA
+[ ] Web manifest, app name, icons and Apple touch icon.
+[ ] Theme color and appropriate standalone installation behavior.
+[ ] Add simple Safari Add to Home Screen guidance.
+[ ] Define service-worker caching and update behavior.
+[ ] Cache only approved app resources; do not casually cache private API responses.
+[ ] Provide an honest offline screen and connection/retry status.
+[ ] Pending-save recovery is already useful, but does not mean full offline support.
+[ ] Test installation, app reopening, updates, logout and storage on the iPhone.
+[ ] Verify pending transfers and entries survive reopening under expected conditions.
+
+PHASE H — Release verification
+[ ] A fresh-user setup path and recovery procedure.
+[ ] Real iPhone and desktop end-to-end tests.
+[ ] Card purchases, repayments, refunds and statement totals reconcile correctly.
+[ ] Simulated network loss after server commit and before response, not just before send.
+[ ] Double-click, duplicate requests, two-tab and expired-session scenarios.
+[ ] Data remains correct after deploy/restart and database migration.
+[ ] Core performance measured on the deployed app.
+[ ] Clear release notes and a short daily-use guide.
+
+PHASE I — Original AI/computer-vision feature
+[ ] Capture/upload a receipt from iPhone camera or photo library.
+[ ] Validate file size/type and define receipt retention/privacy policy.
+[ ] Evaluate a free pretrained OCR solution on your real receipts and server resources.
+[ ] Extract merchant, date, total, currency and optional line items.
+[ ] Handle Arabic/English receipts, poor images and uncertain readings.
+[ ] Let the user correct and confirm the extracted values before saving.
+[ ] Suggest categories without silently altering financial records.
+[ ] Prevent duplicate receipt saves and reuse existing safe-save mechanisms.
+[ ] Start with pretrained models; custom training/fine-tuning only if evaluation
+    reveals a clear gap and enough suitable labeled examples exist.
+[ ] No AI model has been trained, fine-tuned or integrated so far.
+
+13. CURRENT SAMPLE DATA AND CLEANUP NOTE
+--------------------------------------
+Last confirmed accounts:
+1 — Cash: starting 0; income 500; expenses 101.
+2 — My Bank: starting 0.
+3 — Credit Card: credit limit 10,000; starting debt 2,000.
+Known confirmed transfers:
+50 Cash -> My Bank, note Transfer test.
+20 My Bank -> Credit Card, note Card payment test.
+1 My Bank -> Credit Card, note Form payment test.
+After those transfers: Cash 349; Bank 29; card debt 1,979; available 8,021.
+Latest unfinished/retried test is Transfer restore check, amount 1.
+If successfully saved once, Bank becomes 28; debt 1,978; available 8,022.
+That last state has not yet been confirmed by the user.
+Do not use this snapshot as authoritative live data; inspect the API first.
+Do not assume these are the user's real balances. Some records were test data.
+
+14. NEXT SMALL STEP WHEN WE CONTINUE
+-----------------------------------
+Confirm Transfer restore check saved once, the success message appeared, and
+refreshing no longer shows Retry transfer. Then improve the remaining ledger
+rules and correction flows before redesigning and publishing.
+
+The app is a working development tracker, but is not yet confirmed production-ready.
+Credit statements/deadlines, deployment, security hardening, backups, PWA installation,
+and the AI receipt feature remain outstanding.

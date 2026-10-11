@@ -1,0 +1,9 @@
+.ui-skeleton { display: grid; gap: 10px; margin-top: 18px; overflow: hidden; }
+.ui-skeleton-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ui-skeleton-card, .ui-skeleton-line { display: block; border-radius: 12px; background: linear-gradient(90deg, var(--surface-muted), var(--surface-hover), var(--surface-muted)); background-size: 200% 100%; animation: skeleton-wave 1.25s ease-in-out infinite; }
+.ui-skeleton-card { height: 112px; }
+.ui-skeleton-line { width: 100%; height: 14px; }
+.ui-skeleton-line:last-child { width: 62%; }
+@keyframes skeleton-wave { to { background-position: -200% 0; } }
+@media (max-width: 700px) { .ui-skeleton-cards { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .ui-skeleton-card, .ui-skeleton-line { animation: none; } }

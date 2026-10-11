@@ -1,0 +1,2 @@
+.theme-toggle { display: grid; width: 38px; min-width: 38px; min-height: 38px; padding: 0; place-items: center; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); color: var(--text); font-size: 19px; }
+.theme-toggle:hover:not(:disabled) { background: var(--surface-muted); transform: none; }

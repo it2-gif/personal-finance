@@ -1,0 +1,24 @@
+.balances-panel { margin: 38px 0 0; padding: 26px; border: 1px solid var(--border); border-radius: var(--radius-xl); background: var(--surface); box-shadow: var(--shadow-sm); }
+.balances-panel > h2 { margin: 0 0 5px; font-size: 20px; letter-spacing: -.02em; }
+.balances-panel > p { margin: 0; color: var(--muted); font-size: 14px; }
+.inline-retry { margin-top: 16px; }
+.balances-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 22px 0 0; padding: 0; list-style: none; }
+.balance-card { display: flex; min-width: 0; min-height: 245px; flex-direction: column; padding: 20px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface-muted); }
+.balance-card-header { display: flex; align-items: flex-start; gap: 11px; }
+.balance-card-header h3 { margin: 0 0 6px; font-size: 15px; }
+.account-type-icon { display: grid; width: 38px; height: 38px; flex: 0 0 38px; place-items: center; border-radius: 11px; background: var(--surface); color: var(--primary); box-shadow: inset 0 0 0 1px var(--border); font-size: 14px; }
+.balance-value { margin: 24px 0 12px; color: var(--text); font-size: clamp(24px, 2.3vw, 31px); font-weight: 800; letter-spacing: -.035em; overflow-wrap: anywhere; }
+.balance-start { margin: 4px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+.balance-card .ui-progress { margin: -2px 0 12px; }
+.balance-card-actions { display: flex; align-items: center; justify-content: space-between; gap: 5px; margin-top: auto; padding-top: 17px; border-top: 1px solid var(--border); }
+.balance-card-actions .ui-button { min-height: 34px; padding-inline: 8px; font-size: 12px; }
+.balance-card-actions .archive-action { color: var(--muted); }
+.balance-card-actions .archive-action:hover:not(:disabled) { background: var(--danger-soft); color: var(--danger); }
+.balance-edit { width: 100%; }
+.balance-edit h3 { margin: 0 0 14px; }
+.balance-edit fieldset { display: grid; gap: 9px; min-width: 0; }
+.balance-edit label { margin-top: 6px; color: var(--text-soft); font-size: 13px; font-weight: 700; }
+.balance-edit-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+@media (max-width: 1180px) { .balances-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 760px) { .balances-panel { padding: 20px; } .balances-list { grid-template-columns: 1fr; } .balance-card { min-height: 225px; } }

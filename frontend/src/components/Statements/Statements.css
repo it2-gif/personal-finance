@@ -1,0 +1,22 @@
+.statements-panel {
+  margin: 32px 0;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+}
+
+.statements-panel h2 { margin: 0 0 8px; }
+.statements-panel > p { color: var(--muted); }
+.statement-form fieldset { display: grid; gap: 10px; margin: 0; padding: 0; border: 0; }
+.statement-form label { margin-top: 8px; font-size: 14px; font-weight: 600; }
+.statement-form input,
+.statement-form select { min-width: 0; min-height: 48px; padding: 12px 14px; border: 1px solid var(--border-strong); border-radius: 12px; background: var(--surface); font: inherit; font-size: 16px; }
+.statement-form button { margin-top: 16px; }
+.statement-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.statement-secondary { border: 1px solid var(--border-strong); background: var(--surface); color: var(--primary); }
+.statement-list { display: grid; gap: 12px; margin: 24px 0 0; padding: 0; list-style: none; }
+.statement-list li { display: flex; justify-content: space-between; gap: 16px; padding: 16px; border-radius: 14px; background: var(--surface-muted); }
+.statement-list p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
+.statement-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 7px; color: var(--muted); font-size: 12px; }
+@media (max-width: 600px) { .statement-list li { flex-direction: column; } }
