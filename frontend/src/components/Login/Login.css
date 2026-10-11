@@ -68,9 +68,32 @@
   margin: 4px 0 0;
 }
 
+.auth-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.auth-switch .ui-button {
+  margin: 0;
+  color: var(--primary);
+}
+
 @media (max-width: 480px) {
   .auth-card {
     padding: 28px 24px;
+  }
+
+  .auth-switch {
+    align-items: stretch;
+    flex-direction: column;
+    text-align: center;
   }
 }
 

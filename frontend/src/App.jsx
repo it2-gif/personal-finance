@@ -4,7 +4,7 @@ import AccountBalances from './components/AccountBalances/AccountBalances'
 import AccountForm from './components/AccountForm/AccountForm'
 import Dashboard from './components/Dashboard/Dashboard'
 import DashboardInsights from './components/Dashboard/DashboardInsights'
-import Login from './components/Login/Login'
+import AuthScreen from './components/Login/AuthScreen'
 import ChangePassword from './components/Settings/ChangePassword'
 import DataExport from './components/Settings/DataExport'
 import Preferences from './components/Settings/Preferences'
@@ -96,7 +96,7 @@ export default function App() {
     return <main className="center-state"><p role="alert">{error}</p><Button onClick={() => window.location.reload()}>Retry</Button></main>
   }
   if (!user) {
-    return <Login notice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setSessionNotice('') }} />
+    return <AuthScreen sessionNotice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setSessionNotice('') }} />
   }
 
   const currentSection = sections.find((section) => section.id === activeSection)

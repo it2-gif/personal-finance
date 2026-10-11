@@ -6,7 +6,7 @@ import Toast from '../UI/Toast'
 import Button from '../UI/Button'
 import FormField from '../UI/FormField'
 import './Login.css'
-export default function Login({ onLogin, notice = '' }) {
+export default function Login({ onLogin, notice = '', onNoticeClose, signupOpen = false, onCreateAccount }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -51,7 +51,7 @@ export default function Login({ onLogin, notice = '' }) {
         <p className="brand">Personal Finance</p>
         <h1 id="login-heading">Welcome back</h1>
         <p>Sign in to track your money.</p>
-        <Toast message={notice} type="success" />
+        <Toast message={notice} type="success" onClose={onNoticeClose} />
 
         <form onSubmit={handleSubmit} aria-busy={loading}>
           <FormField label="Email" htmlFor="email">
@@ -87,6 +87,15 @@ export default function Login({ onLogin, notice = '' }) {
 
           <Button type="submit" size="large" loading={loading}>Sign in</Button>
         </form>
+
+        {signupOpen && (
+          <div className="auth-switch">
+            <span>Don’t have an account?</span>
+            <Button variant="ghost" size="small" onClick={onCreateAccount}>
+              Create account
+            </Button>
+          </div>
+        )}
       </section>
     </main>
   )
