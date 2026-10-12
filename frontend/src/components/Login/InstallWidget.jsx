@@ -5,17 +5,22 @@ const isStandalone = () => window.matchMedia('(display-mode: standalone)').match
 const isIOS = () => /iphone|ipad|ipod/i.test(window.navigator.userAgent)
 
 export default function InstallWidget() {
-  const [installPrompt, setInstallPrompt] = useState(null)
+  const [installPrompt, setInstallPrompt] = useState(() => window.spendwiseInstallPrompt || null)
   const [installed, setInstalled] = useState(isStandalone)
   const [showGuide, setShowGuide] = useState(false)
 
   useEffect(() => {
-    function handlePrompt(event) { event.preventDefault(); setInstallPrompt(event) }
-    function handleInstalled() { setInstalled(true); setInstallPrompt(null); setShowGuide(false) }
-    window.addEventListener('beforeinstallprompt', handlePrompt)
+    function handlePrompt() { setInstallPrompt(window.spendwiseInstallPrompt || null) }
+    function handleInstalled() {
+      window.spendwiseInstallPrompt = null
+      setInstalled(true)
+      setInstallPrompt(null)
+      setShowGuide(false)
+    }
+    window.addEventListener('spendwise:install-ready', handlePrompt)
     window.addEventListener('appinstalled', handleInstalled)
     return () => {
-      window.removeEventListener('beforeinstallprompt', handlePrompt)
+      window.removeEventListener('spendwise:install-ready', handlePrompt)
       window.removeEventListener('appinstalled', handleInstalled)
     }
   }, [])
@@ -25,6 +30,7 @@ export default function InstallWidget() {
     await installPrompt.prompt()
     const choice = await installPrompt.userChoice
     if (choice.outcome === 'accepted') setInstalled(true)
+    window.spendwiseInstallPrompt = null
     setInstallPrompt(null)
   }
 
