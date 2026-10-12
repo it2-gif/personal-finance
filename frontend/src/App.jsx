@@ -104,8 +104,8 @@ export default function App() {
     <div className="app-shell">
       <aside className="app-sidebar">
         <Button variant="ghost" className="sidebar-brand" onClick={() => openSection('overview')}>
-          <span className="brand-mark" aria-hidden="true">PF</span>
-          <span><strong>Personal Finance</strong><small>Money, made clearer</small></span>
+          <img className="brand-icon" src="/icons/spendwise-192.png" alt="" />
+          <span><strong>Spendwise</strong><small>Money, made clearer</small></span>
         </Button>
 
         <div className="sidebar-label">Workspace</div>
@@ -136,7 +136,7 @@ export default function App() {
 
       <div className="app-workspace">
         <header className="mobile-header">
-          <div className="mobile-brand"><span className="brand-mark">PF</span><strong>{currentSection?.label}</strong></div>
+          <div className="mobile-brand"><img className="brand-icon" src="/icons/spendwise-192.png" alt="" /><strong>{currentSection?.label}</strong></div>
           <ThemeToggle />
         </header>
 

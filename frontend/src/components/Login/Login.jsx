@@ -48,7 +48,7 @@ export default function Login({ onLogin, notice = '', onNoticeClose, onNavigate 
         <ThemeToggle />
       </div>
       <section className="auth-card" aria-labelledby="login-heading">
-        <button className="auth-brand" onClick={() => onNavigate('/')}><span className="brand-mark">PF</span>Personal Finance</button>
+        <button className="auth-brand" onClick={() => onNavigate('/')}><img className="brand-icon" src="/icons/spendwise-192.png" alt="" />Spendwise</button>
         <h1 id="login-heading">Welcome back</h1>
         <p>Sign in to track your money.</p>
         <Toast message={notice} type="success" onClose={onNoticeClose} />

@@ -68,7 +68,7 @@ from schemas import (
 )
 
 
-app = FastAPI(title="Personal Finance API")
+app = FastAPI(title="Spendwise API")
 
 APP_ENV = os.getenv("APP_ENV", "development")
 configured_origins = {

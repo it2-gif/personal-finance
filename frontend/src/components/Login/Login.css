@@ -33,7 +33,7 @@
 }
 
 .auth-brand { margin-bottom: 30px; }
-.auth-brand .brand-mark { width: 34px; height: 34px; }
+.auth-brand .brand-icon { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
 
 .auth-card .brand {
   margin: 0 0 28px;
@@ -160,7 +160,7 @@
 .product-preview { position: relative; padding: 22px; border: 1px solid rgb(255 255 255 / 60%); border-radius: 28px; background: var(--surface); box-shadow: 0 30px 90px rgb(31 41 71 / 18%); transform: rotate(1.25deg); }
 .product-preview::before { content: ''; position: absolute; inset: -50px -55px auto auto; z-index: -1; width: 210px; height: 210px; border-radius: 50%; background: var(--primary-soft); filter: blur(2px); }
 .preview-top { display: flex; align-items: center; gap: 10px; padding-bottom: 18px; border-bottom: 1px solid var(--border); color: var(--text-soft); font-size: 13px; font-weight: 750; }
-.preview-logo { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: var(--primary); color: white; font-size: 11px; }
+.preview-logo { display: block; width: 28px; height: 28px; border-radius: 9px; object-fit: cover; }
 .preview-dot { width: 8px; height: 8px; margin-left: auto; border-radius: 50%; background: var(--success); box-shadow: 0 0 0 5px var(--success-soft); }
 .preview-balance { display: flex; flex-direction: column; padding: 26px 4px 20px; }
 .preview-balance small, .preview-metrics small { color: var(--muted); }
@@ -210,6 +210,37 @@
 .landing-footer p { margin-right: auto; }
 .landing-footer button { border: 0; background: transparent; color: var(--primary); font-weight: 750; }
 
+.install-widget {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: min(410px, calc(100vw - 36px));
+  padding: 10px 10px 10px 12px;
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: 17px;
+  background: color-mix(in srgb, var(--surface) 94%, transparent);
+  box-shadow: 0 18px 50px rgb(20 16 54 / 22%);
+  backdrop-filter: blur(18px);
+}
+.install-widget img { width: 46px; height: 46px; border-radius: 13px; object-fit: cover; }
+.install-widget div { display: flex; min-width: 0; flex-direction: column; gap: 3px; }
+.install-widget strong { color: var(--text); font-size: 14px; }
+.install-widget span { overflow: hidden; color: var(--muted); font-size: 11px; text-overflow: ellipsis; white-space: nowrap; }
+.install-widget .ui-button { min-height: 38px; }
+
+.install-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; padding: 20px; place-items: center; background: rgb(5 8 18 / 68%); backdrop-filter: blur(8px); }
+.install-dialog { width: min(100%, 460px); padding: 34px; border: 1px solid var(--border); border-radius: 24px; background: var(--surface); box-shadow: var(--shadow-lg); }
+.install-dialog > img { width: 64px; height: 64px; margin-bottom: 22px; border-radius: 18px; box-shadow: 0 12px 32px var(--primary-shadow); }
+.install-dialog h2 { margin: 10px 0 14px; font-size: 28px; line-height: 1.12; letter-spacing: -.04em; }
+.install-dialog p, .install-dialog ol { color: var(--muted); font-size: 14px; }
+.install-dialog ol { display: grid; gap: 10px; margin: 22px 0; padding-left: 22px; }
+.install-dialog .ui-button { width: 100%; margin-top: 10px; }
+
 @media (max-width: 900px) {
   .landing-nav nav { display: none; }
   .landing-hero { grid-template-columns: 1fr; padding-top: 55px; }
@@ -239,4 +270,7 @@
   .landing-cta { width: min(calc(100% - 30px), 900px); margin-bottom: 80px; padding: 50px 22px; }
   .landing-footer { flex-wrap: wrap; }
   .landing-footer p { order: 3; width: 100%; margin: 0; }
+  .install-widget { right: 12px; bottom: 12px; left: 12px; width: auto; }
+  .install-widget span { display: none; }
+  .install-dialog { padding: 28px 24px; }
 }

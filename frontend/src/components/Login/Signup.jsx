@@ -50,7 +50,7 @@ export default function Signup({ onCreated, onNavigate }) {
         <ThemeToggle />
       </div>
       <section className="auth-card" aria-labelledby="signup-heading">
-        <button className="auth-brand" onClick={() => onNavigate('/')}><span className="brand-mark">PF</span>Personal Finance</button>
+        <button className="auth-brand" onClick={() => onNavigate('/')}><img className="brand-icon" src="/icons/spendwise-192.png" alt="" />Spendwise</button>
         <h1 id="signup-heading">Create your account</h1>
         <p>Create your private workspace and start with the accounts you already use.</p>
 

@@ -95,3 +95,14 @@ Redeploy both application services after changing domains.
 ## 8. Backups
 
 Review `BACKUP_AND_RESTORE.md` before entering important financial data. Test a restore using a separate database rather than the production database.
+
+## 9. Install Spendwise
+
+Spendwise is a progressive web app served by the existing frontend service; no app store or separate download is required.
+
+- Android and supported desktop browsers use the native install prompt.
+- On iPhone, open Spendwise in Safari, tap **Share**, choose **Add to Home Screen**, then tap **Add**.
+- The service worker caches only the public application shell and same-origin static assets. Private API responses are never cached.
+- Offline mode displays a connection screen rather than stale financial data.
+
+After changing the manifest, icons, or service worker, redeploy the frontend and reload it once while online so the browser can receive the update.

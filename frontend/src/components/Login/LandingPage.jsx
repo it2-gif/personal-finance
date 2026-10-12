@@ -1,12 +1,13 @@
 import Button from '../UI/Button'
 import ThemeToggle from '../UI/ThemeToggle'
+import InstallWidget from './InstallWidget'
 import './Login.css'
 
 export default function LandingPage({ onNavigate }) {
   return (
     <div className="landing-page">
       <header className="landing-nav">
-        <button className="landing-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><span className="brand-mark" aria-hidden="true">PF</span><span>Personal Finance</span></button>
+        <button className="landing-brand" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}><img className="brand-icon" src="/icons/spendwise-192.png" alt="" /><span>Spendwise</span></button>
         <nav aria-label="Public navigation"><a href="#features">Features</a><a href="#security">Security</a></nav>
         <div className="landing-actions"><ThemeToggle /><Button variant="ghost" onClick={() => onNavigate('/login')}>Sign in</Button><Button onClick={() => onNavigate('/signup')}>Get started</Button></div>
       </header>
@@ -22,7 +23,7 @@ export default function LandingPage({ onNavigate }) {
           </div>
 
           <div className="product-preview" aria-label="Example personal finance dashboard">
-            <div className="preview-top"><span className="preview-logo">PF</span><span>Overview</span><span className="preview-dot" /></div>
+            <div className="preview-top"><img className="preview-logo" src="/icons/spendwise-192.png" alt="" /><span>Overview</span><span className="preview-dot" /></div>
             <div className="preview-balance"><small>Total balance</small><strong>EGP 24,850</strong><span>Across 3 accounts</span></div>
             <div className="preview-metrics"><div><small>Income</small><strong className="positive">+ 8,200</strong></div><div><small>Spending</small><strong>− 3,460</strong></div><div><small>Net this month</small><strong className="positive">+ 4,740</strong></div></div>
             <div className="preview-chart" aria-hidden="true">{[35, 48, 42, 68, 58, 76, 88, 72, 91].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}</div>
@@ -48,7 +49,8 @@ export default function LandingPage({ onNavigate }) {
         <section className="landing-cta"><span>Start with a clearer view</span><h2>Your money deserves a workspace that feels simple.</h2><p>Create an account in a minute. You can add your first account when you are ready.</p><Button size="large" onClick={() => onNavigate('/signup')}>Create your account</Button></section>
       </main>
 
-      <footer className="landing-footer"><div className="landing-brand"><span className="brand-mark">PF</span><span>Personal Finance</span></div><p>Clear tools for everyday money.</p><button onClick={() => onNavigate('/login')}>Sign in</button></footer>
+      <footer className="landing-footer"><div className="landing-brand"><img className="brand-icon" src="/icons/spendwise-192.png" alt="" /><span>Spendwise</span></div><p>Clear tools for everyday money.</p><button onClick={() => onNavigate('/login')}>Sign in</button></footer>
+      <InstallWidget />
     </div>
   )
 }
