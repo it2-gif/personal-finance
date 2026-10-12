@@ -7,7 +7,7 @@ import Button from '../UI/Button'
 import FormField from '../UI/FormField'
 import './Login.css'
 
-export default function Signup({ onCreated, onBack }) {
+export default function Signup({ onCreated, onNavigate }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -27,12 +27,12 @@ export default function Signup({ onCreated, onBack }) {
     setLoading(true)
 
     try {
-      await apiRequest('/auth/signup', {
+      const result = await apiRequest('/auth/signup', {
         method: 'POST',
         skipAuthEvent: true,
         body: JSON.stringify({ email: email.trim(), password }),
       })
-      onCreated()
+      onCreated(result)
     } catch (requestError) {
       setError(
         requestError.status
@@ -50,9 +50,9 @@ export default function Signup({ onCreated, onBack }) {
         <ThemeToggle />
       </div>
       <section className="auth-card" aria-labelledby="signup-heading">
-        <p className="brand">Personal Finance</p>
+        <button className="auth-brand" onClick={() => onNavigate('/')}><span className="brand-mark">PF</span>Personal Finance</button>
         <h1 id="signup-heading">Create your account</h1>
-        <p>Set up the private owner account for this workspace.</p>
+        <p>Create your private workspace and start with the accounts you already use.</p>
 
         <form onSubmit={handleSubmit} aria-busy={loading}>
           <FormField label="Email" htmlFor="signup-email">
@@ -106,7 +106,7 @@ export default function Signup({ onCreated, onBack }) {
 
         <div className="auth-switch">
           <span>Already have an account?</span>
-          <Button variant="ghost" size="small" onClick={onBack} disabled={loading}>
+          <Button variant="ghost" size="small" onClick={() => onNavigate('/login')} disabled={loading}>
             Back to sign in
           </Button>
         </div>

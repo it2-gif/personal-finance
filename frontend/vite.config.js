@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: '0.0.0.0',
-    allowedHosts: [process.env.RAILWAY_PUBLIC_DOMAIN || 'localhost'],
+    allowedHosts: [globalThis.process?.env?.RAILWAY_PUBLIC_DOMAIN || 'localhost'],
   },
   server: {
     proxy: {

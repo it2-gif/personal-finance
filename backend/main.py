@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import csv
 import io
 import json
@@ -16,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import case, delete, func, or_, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.responses import JSONResponse
 from fastapi.responses import StreamingResponse
@@ -26,7 +28,9 @@ from auth import (
     COOKIE_SECURE,
     SESSION_DURATION,
     create_session,
+    create_recovery_code,
     get_current_user,
+    hash_recovery_code,
     hash_token,
     password_hasher,
 )
@@ -51,6 +55,7 @@ from schemas import (
     AccountSaveRequest,
     ChangePasswordRequest,
     LoginRequest,
+    ResetPasswordRequest,
     StatementCreate,
     StatementRead,
     SignupRequest,
@@ -324,35 +329,70 @@ def health(db: Session = Depends(get_db)):
 
 
 @app.get("/api/auth/registration-status")
-def registration_status(db: Session = Depends(get_db)):
-    existing_user = db.scalar(select(User.id).limit(1))
-    return {"signup_open": existing_user is None}
+def registration_status():
+    return {"signup_open": True}
 
 
 @app.post("/api/auth/signup", status_code=201)
 def signup(data: SignupRequest, db: Session = Depends(get_db)):
     hashed_password = password_hasher.hash(data.password)
+    recovery_code = create_recovery_code()
+    user = User(
+        email=str(data.email).strip().lower(),
+        password_hash=hashed_password,
+        recovery_code_hash=hash_recovery_code(recovery_code),
+    )
+    db.add(user)
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=409, detail="An account with this email already exists.")
+    db.refresh(user)
+    return {"id": user.id, "email": user.email, "recovery_code": recovery_code}
 
-    with db.begin():
-        db.execute(text("LOCK TABLE users IN EXCLUSIVE MODE"))
 
-        existing_user = db.scalar(select(User.id).limit(1))
-        if existing_user is not None:
-            raise HTTPException(
-                status_code=403,
-                detail="Registration is closed",
-            )
-
-        user = User(
-            email=str(data.email).strip().lower(),
-            password_hash=hashed_password,
+@app.post("/api/auth/reset-password")
+def reset_password(
+    data: ResetPasswordRequest,
+    request: Request,
+    db: Session = Depends(get_db),
+):
+    now = datetime.now(timezone.utc)
+    email = str(data.email).strip().lower()
+    client_host = request.client.host if request.client else "unknown"
+    throttle_key = login_throttle_key(f"recovery:{email}", client_host)
+    throttle = db.get(LoginThrottle, throttle_key)
+    retry_after = blocked_seconds(throttle, now)
+    if retry_after:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many recovery attempts. Try again later.",
+            headers={"Retry-After": str(retry_after)},
         )
-        db.add(user)
-        db.flush()
 
-        result = {"id": user.id, "email": user.email}
+    user = db.scalar(select(User).where(User.email == email))
+    supplied_hash = hash_recovery_code(data.recovery_code)
+    valid_code = bool(
+        user
+        and user.recovery_code_hash
+        and hmac.compare_digest(supplied_hash, user.recovery_code_hash)
+    )
+    if not valid_code:
+        register_login_failure(db, throttle_key, now)
+        raise HTTPException(status_code=400, detail="Email or recovery code is incorrect.")
 
-    return result
+    replacement_code = create_recovery_code()
+    user.password_hash = password_hasher.hash(data.new_password)
+    user.recovery_code_hash = hash_recovery_code(replacement_code)
+    db.execute(delete(LoginSession).where(LoginSession.user_id == user.id))
+    if throttle is not None:
+        db.delete(throttle)
+    db.commit()
+    return {
+        "message": "Password reset. All existing sessions were signed out.",
+        "recovery_code": replacement_code,
+    }
 
 
 @app.post("/api/auth/login")

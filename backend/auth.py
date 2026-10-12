@@ -24,6 +24,19 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
 
+def normalize_recovery_code(code: str) -> str:
+    return "".join(character for character in code.upper() if character.isalnum())
+
+
+def hash_recovery_code(code: str) -> str:
+    return hashlib.sha256(normalize_recovery_code(code).encode("utf-8")).hexdigest()
+
+
+def create_recovery_code() -> str:
+    value = secrets.token_hex(16).upper()
+    return "-".join(value[index:index + 4] for index in range(0, len(value), 4))
+
+
 def create_session(db: Session, user_id: int) -> str:
     token = secrets.token_urlsafe(32)
 

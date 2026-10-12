@@ -48,7 +48,7 @@ export default function App() {
     async function checkSession() {
       try {
         const currentUser = await apiRequest('/auth/me', { skipAuthEvent: true })
-        if (active) setUser(currentUser)
+        if (active && window.location.pathname !== '/') setUser(currentUser)
       } catch (requestError) {
         if (active && requestError.status !== 401) setError('Unable to check your session. Please reload to try again.')
       } finally {
@@ -60,6 +60,7 @@ export default function App() {
       setUser(null)
       setSessionNotice('Your session expired. Sign in again; unfinished saves remain on this device.')
       setActiveSection('overview')
+      window.history.replaceState({}, '', '/login')
     }
     window.addEventListener('finance:session-expired', handleExpiredSession)
     checkSession()
@@ -84,6 +85,7 @@ export default function App() {
       setUser(null)
       setActiveSection('overview')
       setSessionNotice('')
+      window.history.replaceState({}, '', '/')
     } catch {
       setError('Unable to sign out. Please try again.')
     } finally {
@@ -92,11 +94,8 @@ export default function App() {
   }
 
   if (checking) return <main className="center-state"><p role="status">Checking your session…</p></main>
-  if (!user && error) {
-    return <main className="center-state"><p role="alert">{error}</p><Button onClick={() => window.location.reload()}>Retry</Button></main>
-  }
   if (!user) {
-    return <AuthScreen sessionNotice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setSessionNotice('') }} />
+    return <AuthScreen sessionNotice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setSessionNotice(''); window.history.replaceState({}, '', '/app') }} />
   }
 
   const currentSection = sections.find((section) => section.id === activeSection)

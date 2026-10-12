@@ -74,11 +74,13 @@ Verify in this order:
 6. Download the export ZIP.
 7. Review backend logs and confirm no database URL or password appears.
 
-## 6. First owner
+## 6. User accounts
 
-If the Railway database is new, the application allows creation of the first owner account. After that first user exists, public registration closes automatically.
+Visitors can create separate accounts from the public landing page. Every financial record is restricted to its owning user.
 
 Use a unique password of at least 12 characters. Do not store the password in Railway variables or deployment logs.
+
+Signup displays a private recovery code once. Users must store it somewhere safe because password recovery does not use an email provider. A successful password reset replaces the recovery code and signs out every existing session for that account.
 
 ## 7. Custom domains
 

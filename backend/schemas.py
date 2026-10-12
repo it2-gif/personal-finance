@@ -30,6 +30,13 @@ class ChangePasswordRequest(BaseModel):
         return self
 
 
+class ResetPasswordRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    email: EmailStr
+    recovery_code: str = Field(min_length=32, max_length=64)
+    new_password: str = Field(min_length=12, max_length=128)
+
+
 class AccountCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     name: str = Field(min_length=1, max_length=100)

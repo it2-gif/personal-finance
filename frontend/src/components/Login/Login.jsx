@@ -6,7 +6,7 @@ import Toast from '../UI/Toast'
 import Button from '../UI/Button'
 import FormField from '../UI/FormField'
 import './Login.css'
-export default function Login({ onLogin, notice = '', onNoticeClose, signupOpen = false, onCreateAccount }) {
+export default function Login({ onLogin, notice = '', onNoticeClose, onNavigate }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -48,7 +48,7 @@ export default function Login({ onLogin, notice = '', onNoticeClose, signupOpen 
         <ThemeToggle />
       </div>
       <section className="auth-card" aria-labelledby="login-heading">
-        <p className="brand">Personal Finance</p>
+        <button className="auth-brand" onClick={() => onNavigate('/')}><span className="brand-mark">PF</span>Personal Finance</button>
         <h1 id="login-heading">Welcome back</h1>
         <p>Sign in to track your money.</p>
         <Toast message={notice} type="success" onClose={onNoticeClose} />
@@ -83,19 +83,14 @@ export default function Login({ onLogin, notice = '', onNoticeClose, signupOpen 
             />
           </FormField>
 
+          <button className="forgot-link" type="button" onClick={() => onNavigate('/forgot-password')} disabled={loading}>Forgot password?</button>
+
           <Toast message={error} type="error" onClose={() => setError('')} />
 
           <Button type="submit" size="large" loading={loading}>Sign in</Button>
         </form>
 
-        {signupOpen && (
-          <div className="auth-switch">
-            <span>Don’t have an account?</span>
-            <Button variant="ghost" size="small" onClick={onCreateAccount}>
-              Create account
-            </Button>
-          </div>
-        )}
+        <div className="auth-switch"><span>Don’t have an account?</span><Button variant="ghost" size="small" onClick={() => onNavigate('/signup')}>Create account</Button></div>
       </section>
     </main>
   )
