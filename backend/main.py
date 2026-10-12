@@ -379,7 +379,8 @@ def vault_result(vault: EncryptedVault) -> VaultRead:
 @app.get("/api/health")
 def health(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
-    return {"status": "ok", "database": "connected"}
+    db.scalar(select(func.count()).select_from(EncryptedVault))
+    return {"status": "ok", "database": "connected", "encrypted_vaults": "ready"}
 
 
 @app.get("/api/auth/registration-status")
