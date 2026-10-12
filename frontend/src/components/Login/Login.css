@@ -212,8 +212,8 @@
 
 .install-widget {
   position: fixed;
+  right: 18px;
   bottom: 18px;
-  left: 18px;
   z-index: 50;
   display: grid;
   grid-template-columns: 46px minmax(0, 1fr) auto;
