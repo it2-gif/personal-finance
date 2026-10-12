@@ -3,6 +3,8 @@ import { apiRequest } from '../../api'
 import Toast from '../UI/Toast'
 import Button from '../UI/Button'
 import Card from '../UI/Card'
+import { getVaultSession, updateVaultEnvelope } from '../../security/vaultSession'
+import { rewrapVaultPassword } from '../../security/vaultCrypto'
 import './ChangePassword.css'
 
 export default function ChangePassword() {
@@ -24,13 +26,16 @@ export default function ChangePassword() {
     }
     setSaving(true)
     try {
+      const wrappedPassword = await rewrapVaultPassword(getVaultSession().dataKey, newPassword)
       const result = await apiRequest('/auth/change-password', {
         method: 'POST',
         body: JSON.stringify({
           current_password: currentPassword,
           new_password: newPassword,
+          ...wrappedPassword,
         }),
       })
+      await updateVaultEnvelope(wrappedPassword)
       setCurrentPassword('')
       setNewPassword('')
       setConfirmation('')

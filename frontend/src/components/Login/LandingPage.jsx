@@ -19,7 +19,7 @@ export default function LandingPage({ onNavigate }) {
             <h1>Know where your money goes. Plan what comes next.</h1>
             <p>Track accounts, everyday spending, transfers, and credit-card payments in one clear private workspace.</p>
             <div className="hero-actions"><Button size="large" onClick={() => onNavigate('/signup')}>Create free account</Button><Button size="large" variant="secondary" onClick={() => onNavigate('/login')}>Sign in</Button></div>
-            <div className="hero-trust" aria-label="Product qualities"><span>✓ Simple setup</span><span>✓ Private accounts</span><span>✓ No paid add-ons</span></div>
+            <div className="hero-trust" aria-label="Product qualities"><span>✓ Simple setup</span><span>✓ End-to-end encrypted</span><span>✓ Password recovery code</span></div>
           </div>
 
           <div className="product-preview" aria-label="Example personal finance dashboard">
@@ -42,8 +42,8 @@ export default function LandingPage({ onNavigate }) {
         </section>
 
         <section className="security-section" id="security">
-          <div><span className="security-mark">✓</span><span className="section-kicker">Privacy and recovery</span><h2>Your data stays separated and protected.</h2></div>
-          <div className="security-points"><p><strong>Private workspace</strong>Every account sees only its own financial records.</p><p><strong>Secure sessions</strong>Passwords are hashed and login sessions use protected cookies.</p><p><strong>No email required</strong>A private recovery code lets you reset your password without an email service.</p></div>
+          <div><span className="security-mark">✓</span><span className="section-kicker">Privacy and recovery</span><h2>Your financial records are encrypted before they leave your device.</h2></div>
+          <div className="security-points"><p><strong>Encrypted vault</strong>The server stores ciphertext, not readable account names, balances, entries, or transfers.</p><p><strong>Private unlock</strong>Use your password or optional operating-system Face ID, fingerprint, Touch ID, or Windows Hello.</p><p><strong>Recovery without email</strong>Your private recovery code can unlock and re-protect the same vault if you forget your password.</p></div>
         </section>
 
         <section className="landing-cta"><span>Start with a clearer view</span><h2>Your money deserves a workspace that feels simple.</h2><p>Create an account in a minute. You can add your first account when you are ready.</p><Button size="large" onClick={() => onNavigate('/signup')}>Create your account</Button></section>

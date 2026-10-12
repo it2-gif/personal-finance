@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { apiRequest } from '../../api'
+import { unlockVault } from '../../security/vaultSession'
 
 import ThemeToggle from '../UI/ThemeToggle'
 import Toast from '../UI/Toast'
@@ -29,6 +30,7 @@ export default function Login({ onLogin, notice = '', onNoticeClose, onNavigate 
         }),
       })
 
+      await unlockVault(password)
       setPassword('')
       onLogin(user)
     } catch (error) {

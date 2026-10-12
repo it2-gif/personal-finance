@@ -106,3 +106,7 @@ Spendwise is a progressive web app served by the existing frontend service; no a
 - Offline mode displays a connection screen rather than stale financial data.
 
 After changing the manifest, icons, or service worker, redeploy the frontend and reload it once while online so the browser can receive the update.
+
+## 10. Encrypted vault release
+
+Read `E2EE_DEPLOYMENT.md` before deploying the encrypted-vault release. Its one-time migration intentionally deletes all existing test accounts and plaintext financial records. Backend and frontend must be deployed from the same commit.

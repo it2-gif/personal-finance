@@ -1,5 +1,7 @@
 import hashlib
 import hmac
+import base64
+import binascii
 import csv
 import io
 import json
@@ -39,6 +41,7 @@ from models import (
     Account,
     AccountSaveReceipt,
     CreditCardStatement,
+    EncryptedVault,
     LoginSession,
     LoginThrottle,
     StatementPaymentAllocation,
@@ -54,8 +57,10 @@ from schemas import (
     AccountRead,
     AccountSaveRequest,
     ChangePasswordRequest,
+    DeleteAccountRequest,
     LoginRequest,
     ResetPasswordRequest,
+    RecoveryVaultRead,
     StatementCreate,
     StatementRead,
     SignupRequest,
@@ -65,6 +70,8 @@ from schemas import (
     TransactionSaveRequest,
     TransferCreate,
     TransferRead,
+    VaultRead,
+    VaultWrite,
 )
 
 
@@ -104,6 +111,25 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Content-Type"],
 )
+
+LEGACY_FINANCE_PATHS = (
+    "/api/accounts",
+    "/api/transactions",
+    "/api/transfers",
+    "/api/statements",
+    "/api/summary",
+    "/api/export",
+)
+
+
+@app.middleware("http")
+async def require_encrypted_vaults(request: Request, call_next):
+    if request.url.path.startswith(LEGACY_FINANCE_PATHS):
+        return JSONResponse(
+            status_code=410,
+            content={"detail": "This server accepts encrypted vault data only."},
+        )
+    return await call_next(request)
 
 LOGIN_WINDOW = timedelta(minutes=15)
 LOGIN_BLOCK = timedelta(minutes=15)
@@ -322,6 +348,34 @@ def csv_bytes(headers: list[str], rows) -> bytes:
     return output.getvalue().encode("utf-8-sig")
 
 
+def decode_vault_ciphertext(value: str) -> bytes:
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(status_code=422, detail="Vault ciphertext is not valid base64.")
+    if len(decoded) > 6_000_000:
+        raise HTTPException(status_code=413, detail="Encrypted vault is too large.")
+    return decoded
+
+
+def vault_result(vault: EncryptedVault) -> VaultRead:
+    return VaultRead(
+        format_version=vault.format_version,
+        revision=vault.revision,
+        password_kdf_salt=vault.password_kdf_salt,
+        password_kdf_iterations=vault.password_kdf_iterations,
+        password_wrap_nonce=vault.password_wrap_nonce,
+        password_wrapped_key=vault.password_wrapped_key,
+        recovery_kdf_salt=vault.recovery_kdf_salt,
+        recovery_kdf_iterations=vault.recovery_kdf_iterations,
+        recovery_wrap_nonce=vault.recovery_wrap_nonce,
+        recovery_wrapped_key=vault.recovery_wrapped_key,
+        passkey_envelope=vault.passkey_envelope,
+        data_nonce=vault.data_nonce,
+        ciphertext=base64.b64encode(vault.ciphertext).decode("ascii"),
+    )
+
+
 @app.get("/api/health")
 def health(db: Session = Depends(get_db)):
     db.execute(text("SELECT 1"))
@@ -334,7 +388,7 @@ def registration_status():
 
 
 @app.post("/api/auth/signup", status_code=201)
-def signup(data: SignupRequest, db: Session = Depends(get_db)):
+def signup(data: SignupRequest, response: Response, db: Session = Depends(get_db)):
     hashed_password = password_hasher.hash(data.password)
     recovery_code = create_recovery_code()
     user = User(
@@ -349,6 +403,17 @@ def signup(data: SignupRequest, db: Session = Depends(get_db)):
         db.rollback()
         raise HTTPException(status_code=409, detail="An account with this email already exists.")
     db.refresh(user)
+    token = create_session(db, user.id)
+    db.commit()
+    response.set_cookie(
+        key=COOKIE_NAME,
+        value=token,
+        max_age=int(SESSION_DURATION.total_seconds()),
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+        path="/",
+    )
     return {"id": user.id, "email": user.email, "recovery_code": recovery_code}
 
 
@@ -382,9 +447,22 @@ def reset_password(
         register_login_failure(db, throttle_key, now)
         raise HTTPException(status_code=400, detail="Email or recovery code is incorrect.")
 
-    replacement_code = create_recovery_code()
+    vault = db.get(EncryptedVault, user.id)
+    if vault is None:
+        raise HTTPException(status_code=409, detail="Encrypted vault is not initialized.")
+
+    replacement_code = data.new_recovery_code
     user.password_hash = password_hasher.hash(data.new_password)
     user.recovery_code_hash = hash_recovery_code(replacement_code)
+    vault.password_kdf_salt = data.password_kdf_salt
+    vault.password_kdf_iterations = data.password_kdf_iterations
+    vault.password_wrap_nonce = data.password_wrap_nonce
+    vault.password_wrapped_key = data.password_wrapped_key
+    vault.recovery_kdf_salt = data.recovery_kdf_salt
+    vault.recovery_kdf_iterations = data.recovery_kdf_iterations
+    vault.recovery_wrap_nonce = data.recovery_wrap_nonce
+    vault.recovery_wrapped_key = data.recovery_wrapped_key
+    vault.passkey_envelope = None
     db.execute(delete(LoginSession).where(LoginSession.user_id == user.id))
     if throttle is not None:
         db.delete(throttle)
@@ -393,6 +471,21 @@ def reset_password(
         "message": "Password reset. All existing sessions were signed out.",
         "recovery_code": replacement_code,
     }
+
+
+@app.get("/api/auth/recovery-vault", response_model=RecoveryVaultRead)
+def recovery_vault(email: str, response: Response, db: Session = Depends(get_db)):
+    response.headers["Cache-Control"] = "no-store"
+    user = db.scalar(select(User).where(User.email == email.strip().lower()))
+    vault = db.get(EncryptedVault, user.id) if user else None
+    if vault is None:
+        raise HTTPException(status_code=404, detail="Encrypted recovery information was not found.")
+    return RecoveryVaultRead(
+        recovery_kdf_salt=vault.recovery_kdf_salt,
+        recovery_kdf_iterations=vault.recovery_kdf_iterations,
+        recovery_wrap_nonce=vault.recovery_wrap_nonce,
+        recovery_wrapped_key=vault.recovery_wrapped_key,
+    )
 
 
 @app.post("/api/auth/login")
@@ -484,9 +577,84 @@ def logout(
     return response
 
 
+@app.delete("/api/auth/account", status_code=204)
+def delete_account(
+    data: DeleteAccountRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    if not password_hasher.verify(data.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Password is incorrect.")
+    db.delete(user)
+    db.commit()
+    response = Response(status_code=204)
+    response.delete_cookie(
+        key=COOKIE_NAME,
+        path="/",
+        httponly=True,
+        secure=COOKIE_SECURE,
+        samesite=COOKIE_SAMESITE,
+    )
+    return response
+
+
 @app.get("/api/auth/me")
 def me(user: User = Depends(get_current_user)):
     return {"id": user.id, "email": user.email}
+
+
+@app.get("/api/vault", response_model=VaultRead)
+def get_vault(
+    response: Response,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    response.headers["Cache-Control"] = "no-store"
+    vault = db.get(EncryptedVault, user.id)
+    if vault is None:
+        raise HTTPException(status_code=404, detail="Encrypted vault is not initialized.")
+    return vault_result(vault)
+
+
+@app.put("/api/vault", response_model=VaultRead)
+def put_vault(
+    data: VaultWrite,
+    response: Response,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    response.headers["Cache-Control"] = "no-store"
+    ciphertext = decode_vault_ciphertext(data.ciphertext)
+    vault = db.scalar(
+        select(EncryptedVault)
+        .where(EncryptedVault.user_id == user.id)
+        .with_for_update()
+    )
+    if vault is None:
+        if data.expected_revision is not None:
+            raise HTTPException(status_code=409, detail="Vault revision changed. Reload and try again.")
+        vault = EncryptedVault(user_id=user.id, revision=1)
+        db.add(vault)
+    else:
+        if data.expected_revision != vault.revision:
+            raise HTTPException(status_code=409, detail="Vault revision changed. Reload and try again.")
+        vault.revision += 1
+
+    vault.format_version = data.format_version
+    vault.password_kdf_salt = data.password_kdf_salt
+    vault.password_kdf_iterations = data.password_kdf_iterations
+    vault.password_wrap_nonce = data.password_wrap_nonce
+    vault.password_wrapped_key = data.password_wrapped_key
+    vault.recovery_kdf_salt = data.recovery_kdf_salt
+    vault.recovery_kdf_iterations = data.recovery_kdf_iterations
+    vault.recovery_wrap_nonce = data.recovery_wrap_nonce
+    vault.recovery_wrapped_key = data.recovery_wrapped_key
+    vault.passkey_envelope = data.passkey_envelope
+    vault.data_nonce = data.data_nonce
+    vault.ciphertext = ciphertext
+    db.commit()
+    db.refresh(vault)
+    return vault_result(vault)
 
 
 @app.post("/api/auth/change-password")
@@ -499,7 +667,15 @@ def change_password(
     if not password_hasher.verify(data.current_password, user.password_hash):
         raise HTTPException(status_code=400, detail="Current password is incorrect.")
 
+    vault = db.get(EncryptedVault, user.id)
+    if vault is None:
+        raise HTTPException(status_code=409, detail="Encrypted vault is not initialized.")
+
     user.password_hash = password_hasher.hash(data.new_password)
+    vault.password_kdf_salt = data.password_kdf_salt
+    vault.password_kdf_iterations = data.password_kdf_iterations
+    vault.password_wrap_nonce = data.password_wrap_nonce
+    vault.password_wrapped_key = data.password_wrapped_key
     db.execute(delete(LoginSession).where(LoginSession.user_id == user.id))
     token = create_session(db, user.id)
     db.commit()

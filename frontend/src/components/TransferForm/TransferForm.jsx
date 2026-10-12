@@ -29,7 +29,7 @@ function storageKey(userId) {
 
 function restorePending(userId) {
   try {
-    const stored = localStorage.getItem(storageKey(userId))
+    const stored = sessionStorage.getItem(storageKey(userId))
 
     if (!stored) return { entry: null, failed: false }
 
@@ -211,7 +211,7 @@ export default function TransferForm({
 
     // Store the exact request before sending it.
     try {
-      localStorage.setItem(
+      sessionStorage.setItem(
         storageKey(userId),
         JSON.stringify(request),
       )
@@ -238,7 +238,7 @@ export default function TransferForm({
 
       if (canCorrect) {
         try {
-          localStorage.removeItem(storageKey(userId))
+          sessionStorage.removeItem(storageKey(userId))
           setPending(null)
           setError(requestError.message)
         } catch {
@@ -263,7 +263,7 @@ export default function TransferForm({
     }
 
     try {
-      localStorage.removeItem(storageKey(userId))
+      sessionStorage.removeItem(storageKey(userId))
     } catch {
       setError(
         'Transfer saved, but its device copy could not be cleared. Press Retry transfer to confirm and clear it.',

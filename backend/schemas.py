@@ -18,10 +18,52 @@ class LoginRequest(BaseModel):
     password: str = Field(min_length=1, max_length=128)
 
 
+class DeleteAccountRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    password: str = Field(min_length=1, max_length=128)
+
+
+class VaultWrite(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    format_version: int = Field(default=1, ge=1, le=1)
+    expected_revision: int | None = Field(default=None, ge=1)
+    password_kdf_salt: str = Field(min_length=16, max_length=64)
+    password_kdf_iterations: int = Field(ge=210_000, le=2_000_000)
+    password_wrap_nonce: str = Field(min_length=16, max_length=32)
+    password_wrapped_key: str = Field(min_length=24, max_length=256)
+    recovery_kdf_salt: str = Field(min_length=16, max_length=64)
+    recovery_kdf_iterations: int = Field(ge=210_000, le=2_000_000)
+    recovery_wrap_nonce: str = Field(min_length=16, max_length=32)
+    recovery_wrapped_key: str = Field(min_length=24, max_length=256)
+    passkey_envelope: str | None = Field(default=None, max_length=4096)
+    data_nonce: str = Field(min_length=16, max_length=32)
+    ciphertext: str = Field(min_length=24, max_length=8_000_000)
+
+
+class VaultRead(BaseModel):
+    format_version: int
+    revision: int
+    password_kdf_salt: str
+    password_kdf_iterations: int
+    password_wrap_nonce: str
+    password_wrapped_key: str
+    recovery_kdf_salt: str
+    recovery_kdf_iterations: int
+    recovery_wrap_nonce: str
+    recovery_wrapped_key: str
+    passkey_envelope: str | None
+    data_nonce: str
+    ciphertext: str
+
+
 class ChangePasswordRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     current_password: str = Field(min_length=1, max_length=128)
     new_password: str = Field(min_length=12, max_length=128)
+    password_kdf_salt: str = Field(min_length=16, max_length=64)
+    password_kdf_iterations: int = Field(ge=210_000, le=2_000_000)
+    password_wrap_nonce: str = Field(min_length=16, max_length=32)
+    password_wrapped_key: str = Field(min_length=24, max_length=256)
 
     @model_validator(mode="after")
     def passwords_must_differ(self):
@@ -35,6 +77,22 @@ class ResetPasswordRequest(BaseModel):
     email: EmailStr
     recovery_code: str = Field(min_length=32, max_length=64)
     new_password: str = Field(min_length=12, max_length=128)
+    new_recovery_code: str = Field(min_length=32, max_length=64)
+    password_kdf_salt: str = Field(min_length=16, max_length=64)
+    password_kdf_iterations: int = Field(ge=210_000, le=2_000_000)
+    password_wrap_nonce: str = Field(min_length=16, max_length=32)
+    password_wrapped_key: str = Field(min_length=24, max_length=256)
+    recovery_kdf_salt: str = Field(min_length=16, max_length=64)
+    recovery_kdf_iterations: int = Field(ge=210_000, le=2_000_000)
+    recovery_wrap_nonce: str = Field(min_length=16, max_length=32)
+    recovery_wrapped_key: str = Field(min_length=24, max_length=256)
+
+
+class RecoveryVaultRead(BaseModel):
+    recovery_kdf_salt: str
+    recovery_kdf_iterations: int
+    recovery_wrap_nonce: str
+    recovery_wrapped_key: str
 
 
 class AccountCreate(BaseModel):

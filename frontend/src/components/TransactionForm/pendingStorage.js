@@ -7,7 +7,7 @@ function storageKey(userId) {
 }
 
 export function readPending(userId) {
-  const saved = localStorage.getItem(storageKey(userId))
+  const saved = sessionStorage.getItem(storageKey(userId))
   if (!saved) return null
 
   const entry = JSON.parse(saved)
@@ -41,9 +41,9 @@ export function readPending(userId) {
 }
 
 export function writePending(userId, entry) {
-  localStorage.setItem(storageKey(userId), JSON.stringify(entry))
+  sessionStorage.setItem(storageKey(userId), JSON.stringify(entry))
 }
 
 export function clearPending(userId) {
-  localStorage.removeItem(storageKey(userId))
+  sessionStorage.removeItem(storageKey(userId))
 }

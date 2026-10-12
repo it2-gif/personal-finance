@@ -12,16 +12,15 @@ database_url = os.getenv("DATABASE_URL")
 if not database_url:
     raise RuntimeError("DATABASE_URL is missing")
 
-url = make_url(database_url).set(drivername="postgresql+psycopg")
-
-engine = create_engine(
-    url,
-    pool_pre_ping=True,
-    connect_args={
-        "connect_timeout": 10,
-        "sslmode": "require",
-    },
-)
+url = make_url(database_url)
+if url.get_backend_name() == "sqlite":
+    engine = create_engine(url, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(
+        url.set(drivername="postgresql+psycopg"),
+        pool_pre_ping=True,
+        connect_args={"connect_timeout": 10, "sslmode": "require"},
+    )
 
 SessionLocal = sessionmaker(bind=engine)
 

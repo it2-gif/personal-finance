@@ -7,6 +7,12 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: '0.0.0.0',
+    headers: {
+      'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'",
+      'Referrer-Policy': 'no-referrer',
+      'X-Content-Type-Options': 'nosniff',
+      'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
+    },
     allowedHosts: [
       'localhost',
       'spend-wise.up.railway.app',

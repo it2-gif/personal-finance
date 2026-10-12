@@ -5,9 +5,12 @@ import AccountForm from './components/AccountForm/AccountForm'
 import Dashboard from './components/Dashboard/Dashboard'
 import DashboardInsights from './components/Dashboard/DashboardInsights'
 import AuthScreen from './components/Login/AuthScreen'
+import VaultUnlock from './components/Login/VaultUnlock'
 import ChangePassword from './components/Settings/ChangePassword'
 import DataExport from './components/Settings/DataExport'
+import DeleteAccount from './components/Settings/DeleteAccount'
 import Preferences from './components/Settings/Preferences'
+import PasskeyAccess from './components/Settings/PasskeyAccess'
 import Statements from './components/Statements/Statements'
 import TransactionForm from './components/TransactionForm/TransactionForm'
 import TransactionHistory from './components/TransactionHistory/TransactionHistory'
@@ -19,6 +22,7 @@ import ThemeToggle from './components/UI/ThemeToggle'
 import Toast from './components/UI/Toast'
 import ConfirmButton from './components/UI/ConfirmButton'
 import './App.css'
+import { getVaultEnvelope, lockVault } from './security/vaultSession'
 
 const sections = [
   { id: 'overview', label: 'Overview', short: 'Home', icon: '⌂' },
@@ -29,6 +33,8 @@ const sections = [
 
 export default function App() {
   const [user, setUser] = useState(null)
+  const [lockedUser, setLockedUser] = useState(null)
+  const [vaultEnvelope, setVaultEnvelope] = useState(null)
   const [checking, setChecking] = useState(true)
   const [error, setError] = useState('')
   const [loggingOut, setLoggingOut] = useState(false)
@@ -48,7 +54,14 @@ export default function App() {
     async function checkSession() {
       try {
         const currentUser = await apiRequest('/auth/me', { skipAuthEvent: true })
-        if (active && window.location.pathname !== '/') setUser(currentUser)
+        if (active) {
+          setLockedUser(currentUser)
+          try {
+            setVaultEnvelope(await getVaultEnvelope())
+          } catch (vaultError) {
+            if (vaultError.status !== 404) throw vaultError
+          }
+        }
       } catch (requestError) {
         if (active && requestError.status !== 401) setError('Unable to check your session. Please reload to try again.')
       } finally {
@@ -58,6 +71,9 @@ export default function App() {
     function handleExpiredSession() {
       if (!active) return
       setUser(null)
+      setLockedUser(null)
+      setVaultEnvelope(null)
+      lockVault()
       setSessionNotice('Your session expired. Sign in again; unfinished saves remain on this device.')
       setActiveSection('overview')
       window.history.replaceState({}, '', '/login')
@@ -83,6 +99,9 @@ export default function App() {
     try {
       await apiRequest('/auth/logout', { method: 'POST' })
       setUser(null)
+      setLockedUser(null)
+      setVaultEnvelope(null)
+      lockVault()
       setActiveSection('overview')
       setSessionNotice('')
       window.history.replaceState({}, '', '/')
@@ -94,8 +113,11 @@ export default function App() {
   }
 
   if (checking) return <main className="center-state"><p role="status">Checking your session…</p></main>
+  if (!user && lockedUser) {
+    return <VaultUnlock user={lockedUser} envelope={vaultEnvelope} onUnlocked={(currentUser) => { setUser(currentUser); setLockedUser(null); window.history.replaceState({}, '', '/app') }} onSignOut={handleLogout} />
+  }
   if (!user) {
-    return <AuthScreen sessionNotice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setSessionNotice(''); window.history.replaceState({}, '', '/app') }} />
+    return <AuthScreen sessionNotice={sessionNotice} onLogin={(currentUser) => { setUser(currentUser); setLockedUser(null); setSessionNotice(''); window.history.replaceState({}, '', '/app') }} />
   }
 
   const currentSection = sections.find((section) => section.id === activeSection)
@@ -176,8 +198,10 @@ export default function App() {
               <article className="settings-card"><span className="settings-icon">✓</span><div><h2>Protected history</h2><p>Corrections use reversals so your financial history remains clear.</p></div></article>
             </div>
             <Preferences email={user.email} />
+            <PasskeyAccess user={user} />
             <ChangePassword />
             <DataExport />
+            <DeleteAccount onDeleted={() => { setUser(null); setLockedUser(null); setVaultEnvelope(null); lockVault(); window.history.replaceState({}, '', '/') }} />
             <section className="signout-card"><div><h2>Sign out</h2><p>End this session on this device.</p></div><ConfirmButton variant="danger" title="Sign out?" message="Your current session on this device will end." confirmLabel="Sign out" onConfirm={handleLogout} disabled={loggingOut}>Sign out</ConfirmButton></section>
           </section>
         </main>

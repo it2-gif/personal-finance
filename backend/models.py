@@ -2,12 +2,15 @@ from datetime import date, datetime
 from decimal import Decimal
 from sqlalchemy import UniqueConstraint
 from sqlalchemy import (
+    BigInteger,
     CheckConstraint,
     Date,
     DateTime,
     ForeignKey,
+    LargeBinary,
     Numeric,
     String,
+    Text,
     func,
 )
 from sqlalchemy.orm import Mapped, mapped_column
@@ -59,6 +62,36 @@ class LoginSession(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
+        nullable=False,
+    )
+
+
+class EncryptedVault(Base):
+    """Opaque client-encrypted financial data and key envelopes."""
+
+    __tablename__ = "encrypted_vaults"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    format_version: Mapped[int] = mapped_column(nullable=False, default=1)
+    revision: Mapped[int] = mapped_column(BigInteger, nullable=False, default=1)
+    password_kdf_salt: Mapped[str] = mapped_column(String(64), nullable=False)
+    password_kdf_iterations: Mapped[int] = mapped_column(nullable=False)
+    password_wrap_nonce: Mapped[str] = mapped_column(String(32), nullable=False)
+    password_wrapped_key: Mapped[str] = mapped_column(Text, nullable=False)
+    recovery_kdf_salt: Mapped[str] = mapped_column(String(64), nullable=False)
+    recovery_kdf_iterations: Mapped[int] = mapped_column(nullable=False)
+    recovery_wrap_nonce: Mapped[str] = mapped_column(String(32), nullable=False)
+    recovery_wrapped_key: Mapped[str] = mapped_column(Text, nullable=False)
+    passkey_envelope: Mapped[str | None] = mapped_column(Text, nullable=True)
+    data_nonce: Mapped[str] = mapped_column(String(32), nullable=False)
+    ciphertext: Mapped[bytes] = mapped_column(LargeBinary, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
         nullable=False,
     )
 

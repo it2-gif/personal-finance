@@ -5,6 +5,7 @@ import FormField from '../UI/FormField'
 import ThemeToggle from '../UI/ThemeToggle'
 import Toast from '../UI/Toast'
 import './Login.css'
+import { createRecoveryCode, rewrapVaultPassword, rewrapVaultRecovery, unwrapDataKeyWithRecoveryCode } from '../../security/vaultCrypto'
 
 export default function ForgotPassword({ onNavigate, onReset }) {
   const [email, setEmail] = useState('')
@@ -20,7 +21,14 @@ export default function ForgotPassword({ onNavigate, onReset }) {
     if (password !== confirmPassword) { setError('Passwords do not match.'); return }
     setError(''); setLoading(true)
     try {
-      const result = await apiRequest('/auth/reset-password', { method: 'POST', skipAuthEvent: true, body: JSON.stringify({ email: email.trim(), recovery_code: recoveryCode.trim(), new_password: password }) })
+      const recoveryEnvelope = await apiRequest(`/auth/recovery-vault?email=${encodeURIComponent(email.trim())}`, { skipAuthEvent: true })
+      const dataKey = await unwrapDataKeyWithRecoveryCode(recoveryCode.trim(), recoveryEnvelope)
+      const newRecoveryCode = createRecoveryCode()
+      const [passwordEnvelope, newRecoveryEnvelope] = await Promise.all([
+        rewrapVaultPassword(dataKey, password),
+        rewrapVaultRecovery(dataKey, newRecoveryCode),
+      ])
+      const result = await apiRequest('/auth/reset-password', { method: 'POST', skipAuthEvent: true, body: JSON.stringify({ email: email.trim(), recovery_code: recoveryCode.trim(), new_password: password, new_recovery_code: newRecoveryCode, ...passwordEnvelope, ...newRecoveryEnvelope }) })
       onReset(result)
     } catch (requestError) { setError(requestError.status ? requestError.message : 'Unable to reset your password. Please try again.') }
     finally { setLoading(false) }

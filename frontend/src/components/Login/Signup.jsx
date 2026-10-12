@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { apiRequest } from '../../api'
+import { initializeVault } from '../../security/vaultSession'
 
 import ThemeToggle from '../UI/ThemeToggle'
 import Toast from '../UI/Toast'
@@ -32,6 +33,9 @@ export default function Signup({ onCreated, onNavigate }) {
         skipAuthEvent: true,
         body: JSON.stringify({ email: email.trim(), password }),
       })
+      await initializeVault(password, result.recovery_code)
+      setPassword('')
+      setConfirmPassword('')
       onCreated(result)
     } catch (requestError) {
       setError(

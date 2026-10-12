@@ -1,10 +1,11 @@
-const API_ORIGIN = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+import { isVaultPath, vaultRequest } from './security/vaultApi'
 
 export function apiUrl(path) {
-  return `${API_ORIGIN}/api${path}`
+  return `/api${path}`
 }
 
 export async function apiRequest(path, options = {}) {
+  if (isVaultPath(path)) return vaultRequest(path, options)
   const { headers, skipAuthEvent = false, ...requestOptions } = options
 
   const response = await fetch(apiUrl(path), {
