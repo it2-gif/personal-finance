@@ -6,7 +6,7 @@ This project deploys as three Railway services:
 2. Backend (`/backend`)
 3. Frontend (`/frontend`)
 
-The frontend and backend have separate HTTPS domains. The backend accepts only the configured frontend origin and uses a secure HTTP-only session cookie.
+The browser talks to the backend through the frontend's same-origin `/api` proxy. The backend accepts only the configured frontend origin and uses a secure HTTP-only session cookie. Keeping the cookie first-party is required for reliable sessions in installed iOS apps.
 
 ## 1. Create the Railway project
 
@@ -50,15 +50,15 @@ alembic upgrade head
 
 before each deployment, then starts FastAPI on Railway's assigned `$PORT`. Its health check is `/api/health` and verifies the database connection.
 
-## 4. Frontend variable
+## 4. Frontend variables
 
-Add this build variable to the frontend service:
+Add this runtime variable to the frontend service:
 
 ```text
-VITE_API_URL=https://BACKEND_DOMAIN
+BACKEND_URL=https://BACKEND_DOMAIN
 ```
 
-Vite embeds this value during the build. After changing it, redeploy the frontend.
+Do not set `VITE_API_URL` in production. Browser requests must remain relative to the frontend domain so the session cookie is first-party. After changing these variables, redeploy the frontend.
 
 ## 5. Deploy and verify
 
@@ -88,7 +88,7 @@ Add custom domains only after the Railway domains work. Then update:
 
 - Backend `APP_ORIGIN`
 - Backend `ALLOWED_HOSTS`
-- Frontend `VITE_API_URL`
+- Frontend `BACKEND_URL`
 
 Redeploy both application services after changing domains.
 
