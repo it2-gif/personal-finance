@@ -5,7 +5,11 @@ export default defineConfig({
   plugins: [react()],
   preview: {
     host: '0.0.0.0',
-    allowedHosts: [globalThis.process?.env?.RAILWAY_PUBLIC_DOMAIN || 'localhost'],
+    allowedHosts: [
+      'localhost',
+      'spend-wise.up.railway.app',
+      globalThis.process?.env?.RAILWAY_PUBLIC_DOMAIN || 'localhost',
+    ],
   },
   server: {
     proxy: {
