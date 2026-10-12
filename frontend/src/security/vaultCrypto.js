@@ -193,6 +193,16 @@ export function createRecoveryCode() {
   return hex.match(/.{1,4}/g).join('-')
 }
 
+export function normalizeRecoveryCode(value) {
+  return String(value || '').normalize('NFKC').toUpperCase().replace(/[^A-Z0-9]/g, '')
+}
+
+export function recoveryCodesMatch(first, second) {
+  const left = normalizeRecoveryCode(first)
+  const right = normalizeRecoveryCode(second)
+  return left.length > 0 && left === right
+}
+
 export async function buildVaultUpdate(dataKey, data, envelope) {
   const encryptedData = await encryptVaultData(dataKey, data)
   return {

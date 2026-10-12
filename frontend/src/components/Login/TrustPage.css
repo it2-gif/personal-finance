@@ -1,0 +1,12 @@
+.trust-page { min-height: 100vh; background: var(--bg); }
+.trust-page > header { display: flex; align-items: center; justify-content: space-between; width: min(calc(100% - 40px), 900px); min-height: 82px; margin: auto; }
+.trust-page main { width: min(calc(100% - 40px), 760px); margin: auto; padding: 70px 0 110px; }
+.trust-eyebrow { color: var(--primary); font-size: 13px; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.trust-page h1 { max-width: 720px; margin: 14px 0 20px; font-size: clamp(2.4rem, 6vw, 4.4rem); line-height: 1; letter-spacing: -.055em; }
+.trust-intro { margin: 0 0 48px; color: var(--muted); font-size: 1.08rem; line-height: 1.7; }
+.trust-sections { display: grid; gap: 14px; margin-bottom: 28px; }
+.trust-sections section, .trust-note { padding: 24px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
+.trust-sections h2 { margin: 0 0 8px; font-size: 18px; }
+.trust-sections p, .trust-note p { margin: 0; color: var(--muted); line-height: 1.65; }
+.trust-note { margin-bottom: 28px; background: var(--warning-soft); }
+.trust-note strong { display: block; margin-bottom: 6px; }

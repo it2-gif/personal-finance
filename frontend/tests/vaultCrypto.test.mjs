@@ -6,6 +6,7 @@ import {
   decryptVaultData,
   rewrapVaultPassword,
   rewrapVaultRecovery,
+  recoveryCodesMatch,
   unlockVaultWithPassword,
   unlockVaultWithRecoveryCode,
 } from '../src/security/vaultCrypto.js'
@@ -19,6 +20,12 @@ test('password and recovery code unlock the same encrypted vault', async () => {
   const recoveryResult = await unlockVaultWithRecoveryCode(recoveryCode, created.envelope)
   assert.deepEqual(passwordResult.data, recoveryResult.data)
   assert.equal(passwordResult.data.version, 1)
+})
+
+test('recovery confirmation ignores formatting but rejects altered characters', () => {
+  assert.equal(recoveryCodesMatch('abcd efgh-1234', 'ABCD-EFGH-1234'), true)
+  assert.equal(recoveryCodesMatch('ABCD-EFGH-1235', 'ABCD-EFGH-1234'), false)
+  assert.equal(recoveryCodesMatch('', ''), false)
 })
 
 test('wrong passwords and modified ciphertext are rejected', async () => {

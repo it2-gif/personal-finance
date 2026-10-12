@@ -139,6 +139,14 @@
 .recovery-check { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 20px; border-radius: 50%; background: var(--success-soft); color: var(--success); font-size: 26px; font-weight: 900; }
 .recovery-code { margin: 24px 0 8px; padding: 18px; overflow-wrap: anywhere; border: 1px dashed var(--primary); border-radius: var(--radius-md); background: var(--primary-soft); color: var(--text); font: 700 1rem/1.6 ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .05em; }
 .recovery-warning { display: flex; flex-direction: column; gap: 4px; margin: 24px 0 4px; padding: 14px; border-radius: var(--radius-md); background: var(--warning-soft); color: var(--text-soft); font-size: 14px; text-align: left; }
+.recovery-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.recovery-actions .ui-button { margin-top: 0; }
+.recovery-confirm-label { display: block; margin-top: 20px; text-align: left; }
+.recovery-confirm { margin-top: 8px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; letter-spacing: .03em; }
+
+@media (max-width: 480px) {
+  .recovery-actions { grid-template-columns: 1fr; }
+}
 
 .landing-page { min-height: 100vh; overflow: hidden; }
 .landing-nav { position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between; width: min(calc(100% - 40px), 1180px); min-height: 82px; margin: 0 auto; }
@@ -209,6 +217,7 @@
 .landing-footer { display: flex; align-items: center; gap: 24px; width: min(calc(100% - 40px), 1180px); margin: 0 auto; padding: 28px 0; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
 .landing-footer p { margin-right: auto; }
 .landing-footer button { border: 0; background: transparent; color: var(--primary); font-weight: 750; }
+.footer-links { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; }
 
 .install-widget {
   position: fixed;

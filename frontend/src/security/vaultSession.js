@@ -25,6 +25,19 @@ async function vaultFetch(options = {}) {
   return data
 }
 
+async function refreshAfterConflict() {
+  if (!session) return
+  const envelope = await vaultFetch()
+  try {
+    const data = await decryptVaultData(session.dataKey, envelope)
+    session = { ...session, data, envelope }
+  } catch {
+    lockVault()
+    window.dispatchEvent(new CustomEvent('finance:vault-lock-required'))
+    throw new Error('Your vault security changed on another device. Sign in again before continuing.')
+  }
+}
+
 export async function getVaultEnvelope() {
   return vaultFetch()
 }
@@ -82,7 +95,18 @@ export async function updateVault(mutator) {
     const nextData = structuredClone(session.data)
     const result = mutator(nextData)
     const update = await buildVaultUpdate(session.dataKey, nextData, session.envelope)
-    const envelope = await vaultFetch({ method: 'PUT', body: JSON.stringify(update) })
+    let envelope
+    try {
+      envelope = await vaultFetch({ method: 'PUT', body: JSON.stringify(update) })
+    } catch (error) {
+      if (error.status === 409) {
+        await refreshAfterConflict()
+        const conflict = new Error('Your vault was updated on another device. Your form is unchanged; review it and save again.')
+        conflict.status = 409
+        throw conflict
+      }
+      throw error
+    }
     session = { ...session, data: nextData, envelope }
     return result
   })
@@ -95,7 +119,18 @@ export async function updateVaultEnvelope(changes) {
     if (!session) throw new Error('Vault is locked.')
     const nextEnvelope = { ...session.envelope, ...changes }
     const update = await buildVaultUpdate(session.dataKey, session.data, nextEnvelope)
-    const envelope = await vaultFetch({ method: 'PUT', body: JSON.stringify(update) })
+    let envelope
+    try {
+      envelope = await vaultFetch({ method: 'PUT', body: JSON.stringify(update) })
+    } catch (error) {
+      if (error.status === 409) {
+        await refreshAfterConflict()
+        const conflict = new Error('Your vault was updated on another device. Review the latest settings and try again.')
+        conflict.status = 409
+        throw conflict
+      }
+      throw error
+    }
     session = { ...session, envelope }
     return envelope
   })

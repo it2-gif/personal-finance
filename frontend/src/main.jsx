@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.jsx'
 import { lockVault } from './security/vaultSession.js'
+import AppErrorBoundary from './components/UI/AppErrorBoundary.jsx'
 
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault()
@@ -18,7 +19,7 @@ window.addEventListener('pagehide', lockVault)
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <AppErrorBoundary><App /></AppErrorBoundary>
   </StrictMode>,
 )
 

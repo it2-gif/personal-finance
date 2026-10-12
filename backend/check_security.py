@@ -22,15 +22,24 @@ record = LoginThrottle(
 assert blocked_seconds(record, now) > 0
 assert blocked_seconds(record, now + timedelta(minutes=6)) == 0
 
+key_wrapper = {
+    "password_kdf_salt": "c" * 24,
+    "password_kdf_iterations": 600_000,
+    "password_wrap_nonce": "b" * 16,
+    "password_wrapped_key": "d" * 64,
+}
+
 ChangePasswordRequest(
     current_password="old-password-value",
     new_password="new-password-value",
+    **key_wrapper,
 )
 
 try:
     ChangePasswordRequest(
         current_password="same-password-value",
         new_password="same-password-value",
+        **key_wrapper,
     )
 except ValidationError:
     pass

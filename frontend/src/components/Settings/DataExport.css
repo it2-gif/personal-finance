@@ -4,3 +4,10 @@
 .export-note { margin: 0; color: var(--muted); }
 .export-card button { margin: 18px 0 10px; }
 .export-note { font-size: 13px; }
+.backup-divider { height: 1px; margin: 24px 0; background: var(--border); }
+.export-card h3 { margin: 0 0 6px; font-size: 16px; }
+.restore-panel { margin-top: 14px; padding: 14px; border: 1px solid var(--border); border-radius: var(--radius-md); }
+.restore-panel summary { cursor: pointer; font-weight: 700; }
+.restore-panel p { color: var(--muted); font-size: 13px; }
+.restore-panel label { display: block; margin: 12px 0 6px; font-size: 13px; font-weight: 700; }
+.restore-panel input { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); }

@@ -49,7 +49,7 @@ export default function LandingPage({ onNavigate }) {
         <section className="landing-cta"><span>Start with a clearer view</span><h2>Your money deserves a workspace that feels simple.</h2><p>Create an account in a minute. You can add your first account when you are ready.</p><Button size="large" onClick={() => onNavigate('/signup')}>Create your account</Button></section>
       </main>
 
-      <footer className="landing-footer"><div className="landing-brand"><img className="brand-icon" src="/icons/spendwise-192.png" alt="" /><span>Spendwise</span></div><p>Clear tools for everyday money.</p><button onClick={() => onNavigate('/login')}>Sign in</button></footer>
+      <footer className="landing-footer"><div className="landing-brand"><img className="brand-icon" src="/icons/spendwise-192.png" alt="" /><span>Spendwise</span></div><p>Clear tools for everyday money.</p><div className="footer-links"><button onClick={() => onNavigate('/privacy')}>Privacy</button><button onClick={() => onNavigate('/terms')}>Terms</button><button onClick={() => onNavigate('/security')}>Security</button><button onClick={() => onNavigate('/support')}>Support</button><button onClick={() => onNavigate('/login')}>Sign in</button></div></footer>
       <InstallWidget />
     </div>
   )

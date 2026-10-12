@@ -4,8 +4,14 @@ import assert from 'node:assert/strict'
 globalThis.window = { location: { origin: 'https://spendwise.test' } }
 
 let storedEnvelope = null
+let forceRevisionConflict = false
 globalThis.fetch = async (_url, options = {}) => {
   if ((options.method || 'GET') === 'PUT') {
+    if (forceRevisionConflict) {
+      forceRevisionConflict = false
+      storedEnvelope = { ...storedEnvelope, revision: storedEnvelope.revision + 1 }
+      return { ok: false, status: 409, json: async () => ({ detail: 'Vault revision changed. Reload and try again.' }) }
+    }
     const body = JSON.parse(options.body)
     const revision = storedEnvelope ? storedEnvelope.revision + 1 : 1
     storedEnvelope = { ...body, revision }
@@ -17,7 +23,7 @@ globalThis.fetch = async (_url, options = {}) => {
     : { ok: false, status: 404, json: async () => ({ detail: 'Not found' }) }
 }
 
-const { initializeVault } = await import('../src/security/vaultSession.js')
+const { getUnlockedVault, initializeVault, updateVault } = await import('../src/security/vaultSession.js')
 const { vaultRequest } = await import('../src/security/vaultApi.js')
 
 test('encrypted local ledger calculates accounts, entries, transfers and summary', async () => {
@@ -47,4 +53,15 @@ test('encrypted local ledger calculates accounts, entries, transfers and summary
   assert.equal(summary.surplus, '-200.00')
   assert.equal(JSON.stringify(storedEnvelope).includes('Private bank'), false)
   assert.equal(JSON.stringify(storedEnvelope).includes('1000.00'), false)
+})
+
+test('revision conflicts refresh the vault and preserve a safe retry path', async () => {
+  forceRevisionConflict = true
+  await assert.rejects(
+    updateVault((next) => { next.accounts.push({ id: 99, name: 'Unsaved account' }) }),
+    /updated on another device/,
+  )
+  assert.equal(getUnlockedVault().accounts.some((account) => account.id === 99), false)
+  await updateVault((next) => { next.accounts.push({ id: 99, name: 'Retried account' }) })
+  assert.equal(getUnlockedVault().accounts.some((account) => account.id === 99), true)
 })

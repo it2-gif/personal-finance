@@ -4,8 +4,9 @@ import LandingPage from './LandingPage'
 import Login from './Login'
 import RecoveryCode from './RecoveryCode'
 import Signup from './Signup'
+import TrustPage from './TrustPage'
 
-const publicPaths = new Set(['/', '/login', '/signup', '/forgot-password'])
+const publicPaths = new Set(['/', '/login', '/signup', '/forgot-password', '/privacy', '/terms', '/security', '/support'])
 const currentPath = () => publicPaths.has(window.location.pathname) ? window.location.pathname : '/'
 
 export default function AuthScreen({ onLogin, sessionNotice = '' }) {
@@ -37,5 +38,6 @@ export default function AuthScreen({ onLogin, sessionNotice = '' }) {
   if (path === '/login') return <Login notice={notice} onNoticeClose={() => setNotice('')} onLogin={onLogin} onNavigate={navigate} />
   if (path === '/signup') return <Signup onNavigate={navigate} onCreated={(result) => setRecovery({ user: { id: result.id, email: result.email }, code: result.recovery_code, title: 'Save your recovery code', message: 'This code unlocks your encrypted financial vault if you forget your password. Store it somewhere safe and private.' })} />
   if (path === '/forgot-password') return <ForgotPassword onNavigate={navigate} onReset={(result) => setRecovery({ code: result.recovery_code, title: 'Password reset complete', message: 'Your previous recovery code has been replaced. Save this new code before signing in.' })} />
+  if (['/privacy', '/terms', '/security', '/support'].includes(path)) return <TrustPage path={path} onNavigate={navigate} />
   return <LandingPage onNavigate={navigate} />
 }

@@ -78,11 +78,21 @@ export default function App() {
       setActiveSection('overview')
       window.history.replaceState({}, '', '/login')
     }
+    function handleVaultLockRequired() {
+      if (!active) return
+      setUser(null)
+      setLockedUser(null)
+      setVaultEnvelope(null)
+      setSessionNotice('Your vault security changed on another device. Sign in again to continue safely.')
+      window.history.replaceState({}, '', '/login')
+    }
     window.addEventListener('finance:session-expired', handleExpiredSession)
+    window.addEventListener('finance:vault-lock-required', handleVaultLockRequired)
     checkSession()
     return () => {
       active = false
       window.removeEventListener('finance:session-expired', handleExpiredSession)
+      window.removeEventListener('finance:vault-lock-required', handleVaultLockRequired)
     }
   }, [])
 
